@@ -1,0 +1,1918 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CafeOrder System - Prototipo de Alta Fidelidad</title>
+    <style>
+        /* ==========================================================================
+           VARIABLES Y DISEÑO ADAPTATIVO (WCAG AA / MOBILE FIRST)
+           ========================================================================== */
+        :root {
+            /* Paleta de alto contraste para entornos de alta iluminación (Ratio > 4.5:1) */
+            --bg-main: #0b0f19;
+            --bg-panel: #151f32;
+            --bg-card: #1e293b;
+            --border-color: #334155;
+            --text-main: #f8fafc;
+            --text-muted: #cbd5e1;
+            
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+            --success: #10b981;
+            --success-hover: #059669;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --danger-hover: #dc2626;
+
+            --font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        /* Reseteo y Accesibilidad de Teclado */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        *:focus-visible {
+            outline: 3px solid var(--warning);
+            outline-offset: 2px;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            line-height: 1.5;
+            padding-bottom: 60px; /* Espacio para barra flotante de desarrollo */
+        }
+
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            border: 0;
+        }
+
+        /* Skip Link para Lectores de Pantalla */
+        .skip-link {
+            position: absolute;
+            top: -40px;
+            left: 0;
+            background: var(--warning);
+            color: #000;
+            padding: 8px;
+            z-index: 100;
+            transition: top 0.2s;
+        }
+        .skip-link:focus {
+            top: 0;
+        }
+
+        /* Contenedor Principal */
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 16px;
+        }
+
+        /* ==========================================================================
+           CABECERA EVALUADORA Y DE SESIÓN
+           ========================================================================== */
+        header {
+            background-color: var(--bg-panel);
+            border-bottom: 2px solid var(--border-color);
+            padding: 12px 16px;
+            margin-bottom: 20px;
+        }
+
+        .header-top {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .system-title {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--primary);
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .session-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            font-size: 0.875rem;
+            background: var(--bg-card);
+            padding: 6px 12px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+        }
+
+        /* Barra de Simulación del Evaluador (Profesor/Testeo) */
+        .evaluator-bar {
+            background-color: #2e1065; /* Violeta oscuro para diferenciarlo de producción */
+            color: var(--text-main);
+            padding: 10px;
+            font-size: 0.85rem;
+            border-bottom: 2px solid var(--warning);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        @media (min-width: 768px) {
+            .evaluator-bar {
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center;
+            }
+        }
+        .evaluator-controls {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .btn-evaluator {
+            background-color: #4c1d95;
+            color: white;
+            border: 1px solid #7c3aed;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+        .btn-evaluator:hover {
+            background-color: #6d28d9;
+        }
+        .btn-evaluator.active {
+            border-color: var(--warning);
+            background-color: var(--warning);
+            color: #000;
+        }
+
+        /* ==========================================================================
+           BOTONES Y COMPONENTES REUTILIZABLES
+           ========================================================================== */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px 16px;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+            width: 100%;
+        }
+        @media (min-width: 768px) {
+            .btn {
+                width: auto;
+            }
+        }
+        .btn-primary { background-color: var(--primary); color: white; }
+        .btn-primary:hover { background-color: var(--primary-hover); }
+        .btn-success { background-color: var(--success); color: white; }
+        .btn-success:hover { background-color: var(--success-hover); }
+        .btn-danger { background-color: var(--danger); color: white; }
+        .btn-danger:hover { background-color: var(--danger-hover); }
+        .btn-warning { background-color: var(--warning); color: #000; }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+        .form-control {
+            width: 100%;
+            padding: 12px;
+            font-size: 1rem;
+            background-color: var(--bg-card);
+            border: 2px solid var(--border-color);
+            color: var(--text-main);
+            border-radius: 6px;
+        }
+        .form-control:focus {
+            border-color: var(--primary);
+            outline: none;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .badge-pendiente { background-color: var(--warning); color: #000; }
+        .badge-preparacion { background-color: var(--primary); color: #fff; }
+        .badge-listo { background-color: var(--success); color: #fff; }
+        .badge-pagado { background-color: #64748b; color: #fff; }
+
+        /* ==========================================================================
+           VISTA 1: INICIO DE SESIÓN
+           ========================================================================== */
+        .login-card {
+            background-color: var(--bg-panel);
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            max-width: 450px;
+            margin: 40px auto;
+            padding: 24px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        }
+        .login-card h2 {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .login-error {
+            background-color: rgba(239, 68, 68, 0.2);
+            border: 1px solid var(--danger);
+            color: #fca5a5;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 16px;
+            font-weight: bold;
+            display: none;
+            text-align: center;
+        }
+        .quick-credentials {
+            margin-top: 20px;
+            background: var(--bg-card);
+            border: 1px dashed var(--border-color);
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+        }
+        .quick-credentials table {
+            width: 100%;
+            margin-top: 8px;
+            border-collapse: collapse;
+        }
+        .quick-credentials td {
+            padding: 4px 0;
+        }
+
+        /* ==========================================================================
+           VISTA 2: GARZÓN (GESTOR DE PEDIDOS)
+           ========================================================================== */
+        .waiter-layout {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+        @media (min-width: 992px) {
+            .waiter-layout {
+                grid-template-columns: 2fr 1.2fr;
+            }
+        }
+
+        .category-tabs {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 10px;
+            margin-bottom: 16px;
+        }
+        .category-tab {
+            background-color: var(--bg-panel);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            padding: 10px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            white-space: nowrap;
+            font-weight: 600;
+        }
+        .category-tab.active {
+            background-color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 12px;
+        }
+        .product-card {
+            background-color: var(--bg-panel);
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 140px;
+        }
+        .product-card.sold-out {
+            opacity: 0.4;
+            pointer-events: none;
+            border-style: dashed;
+        }
+        .product-name {
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-bottom: 4px;
+        }
+        .product-price {
+            color: var(--warning);
+            font-size: 1.25rem;
+            font-weight: 800;
+        }
+
+        /* Sidebar Comanda */
+        .cart-card {
+            background-color: var(--bg-panel);
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            align-self: start;
+        }
+        .cart-items {
+            margin: 16px 0;
+            max-height: 250px;
+            overflow-y: auto;
+        }
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .cart-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-qty {
+            width: 32px;
+            height: 32px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        /* Historial de Comandas del Garzón */
+        .waiter-orders {
+            margin-top: 24px;
+            background: var(--bg-panel);
+            border-radius: 12px;
+            border: 2px solid var(--border-color);
+            padding: 16px;
+        }
+
+        /* ==========================================================================
+           VISTA 3: BARISTA (PANTALLA KANBAN KITCHEN)
+           ========================================================================== */
+        .kitchen-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .kitchen-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
+        }
+        /* Resaltado visual intenso para pedidos FIFO (Nuevos / Pendientes) */
+        .kitchen-card {
+            background-color: var(--bg-panel);
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px;
+            position: relative;
+            transition: transform 0.2s;
+        }
+        .kitchen-card.status-pendiente {
+            border: 3px solid var(--warning);
+            box-shadow: 0 0 15px rgba(245, 158, 11, 0.3);
+            animation: pulse-border 2s infinite;
+        }
+        .kitchen-card.status-preparacion {
+            border: 3px solid var(--primary);
+        }
+        @keyframes pulse-border {
+            0% { box-shadow: 0 0 5px rgba(245, 158, 11, 0.2); }
+            50% { box-shadow: 0 0 15px rgba(245, 158, 11, 0.5); }
+            100% { box-shadow: 0 0 5px rgba(245, 158, 11, 0.2); }
+        }
+        .kitchen-timer {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            margin-top: 8px;
+        }
+
+        /* ==========================================================================
+           VISTA 4: ADMINISTRADOR Y CAJA
+           ========================================================================== */
+        .admin-tabs {
+            display: flex;
+            border-bottom: 2px solid var(--border-color);
+            margin-bottom: 20px;
+        }
+        .admin-tab-btn {
+            background: none;
+            color: var(--text-muted);
+            border: none;
+            padding: 12px 16px;
+            font-size: 1rem;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .admin-tab-btn.active {
+            color: var(--primary);
+            border-bottom: 3px solid var(--primary);
+        }
+
+        .dashboard-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .stat-card {
+            background-color: var(--bg-panel);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+        }
+        .stat-val {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--success);
+        }
+
+        /* Tabla de Auditoría */
+        .audit-table-wrapper {
+            overflow-x: auto;
+            background-color: var(--bg-panel);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+        .audit-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.9rem;
+        }
+        .audit-table th, .audit-table td {
+            padding: 12px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .audit-table th {
+            background-color: var(--bg-card);
+            font-weight: bold;
+        }
+
+        /* Mantenedor de Precios e Inventario */
+        .menu-maintainer-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .menu-maintainer-item {
+            background-color: var(--bg-panel);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px 16px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+
+        /* ==========================================================================
+           MODAL DE CIERRE DE CAJA Y POPUPS DE NOTIFICACIÓN
+           ========================================================================== */
+        .toast-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-width: 400px;
+            width: calc(100% - 40px);
+        }
+        .toast {
+            background-color: var(--bg-panel);
+            border-left: 5px solid var(--primary);
+            padding: 16px;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+            color: var(--text-main);
+            animation: slideIn 0.3s forwards;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .toast.toast-success { border-left-color: var(--success); }
+        .toast.toast-danger { border-left-color: var(--danger); }
+        .toast.toast-warning { border-left-color: var(--warning); }
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.85);
+            z-index: 999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 16px;
+        }
+        .modal {
+            background: var(--bg-panel);
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            max-width: 500px;
+            width: 100%;
+            padding: 24px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        }
+        .modal h3 {
+            margin-bottom: 16px;
+            color: var(--warning);
+        }
+
+        /* Toggle Switch */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #cbd5e1;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px; width: 16px;
+            left: 4px; bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider { background-color: var(--success); }
+        input:checked + .slider:before { transform: translateX(26px); }
+
+        /* Estilo responsivo adicional para tablas */
+        .responsive-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        .responsive-table th, .responsive-table td {
+            padding: 10px;
+            border-bottom: 1px solid var(--border-color);
+            text-align: left;
+        }
+        .responsive-table th { background: var(--bg-card); }
+    </style>
+</head>
+<body>
+
+    <a href="#main-content" class="skip-link">Saltar al contenido principal</a>
+
+    <!-- BARRA DE CONTROL DEL EVALUADOR (PROFESOR / TESTEO GLOBAL) -->
+    <div class="evaluator-bar" aria-label="Controles de simulación de pruebas">
+        <div>
+            <strong>Simulador de Evaluación:</strong> Permite probar las interfaces sin perder la persistencia de datos local.
+        </div>
+        <div class="evaluator-controls">
+            <button class="btn-evaluator" onclick="switchGlobalView('login')" id="eval-login">1. Login</button>
+            <button class="btn-evaluator" onclick="switchGlobalView('waiter')" id="eval-waiter">2. Garzón</button>
+            <button class="btn-evaluator" onclick="switchGlobalView('kitchen')" id="eval-kitchen">3. Barista (Cocina)</button>
+            <button class="btn-evaluator" onclick="switchGlobalView('admin')" id="eval-admin">4. Admin & Caja</button>
+            <button class="btn-evaluator" onclick="loadPerformanceMocks()" style="background-color: #047857; border-color: #059669;">⚡ Inyectar 50 Pedidos (Prueba de Carga)</button>
+        </div>
+    </div>
+
+    <!-- CABECERA GENERAL -->
+    <header>
+        <div class="header-top">
+            <div class="system-title">
+                ☕ CafeOrder System
+                <span style="font-size: 0.8rem; background-color: #ef4444; color: white; padding: 2px 8px; border-radius: 4px; font-weight: bold; letter-spacing: 1px;">MODO LOCAL</span>
+            </div>
+            <div class="session-info" id="session-display">
+                <!-- Se inyecta dinámicamente -->
+                <span>Sin sesión activa</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="container" id="main-content">
+        
+        <!-- VISTA 1: INICIO DE SESIÓN -->
+        <section id="view-login" style="display: none;">
+            <div class="login-card">
+                <h2>Control de Acceso</h2>
+                <div class="login-error" id="login-error-msg" role="alert" aria-live="polite"></div>
+                
+                <form id="login-form" onsubmit="handleLogin(event)">
+                    <div class="form-group">
+                        <label for="login-rut">RUT del Usuario (Formato 12.345.678-9)</label>
+                        <input type="text" id="login-rut" class="form-control" placeholder="12.345.678-9" required autocomplete="username">
+                    </div>
+                    <div class="form-group">
+                        <label for="login-pass">Contraseña</label>
+                        <input type="password" id="login-pass" class="form-control" required autocomplete="current-password">
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">Ingresar al Sistema</button>
+                </form>
+
+                <div class="quick-credentials">
+                    <strong>Credenciales de Prueba (RUT válido):</strong>
+                    <table>
+                        <tr>
+                            <td><strong>Garzón:</strong></td>
+                            <td>RUT: <code>11.111.111-1</code></td>
+                            <td>Clave: <code>garzon123</code></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Cocina:</strong></td>
+                            <td>RUT: <code>22.222.222-2</code></td>
+                            <td>Clave: <code>cocina123</code></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Admin:</strong></td>
+                            <td>RUT: <code>33.333.333-3</code></td>
+                            <td>Clave: <code>admin123</code></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- VISTA 2: INTERFAZ DEL GARZÓN -->
+        <section id="view-waiter" style="display: none;">
+            <h2 style="margin-bottom: 16px;">Gestión de Pedidos en Salón</h2>
+            
+            <div class="waiter-layout">
+                <!-- Sección Izquierda: Catálogo -->
+                <div>
+                    <div class="category-tabs" id="category-tabs" role="tablist" aria-label="Categorías de menú">
+                        <!-- Generado dinámicamente -->
+                    </div>
+                    
+                    <div class="products-grid" id="products-grid">
+                        <!-- Productos generados dinámicamente -->
+                    </div>
+                </div>
+
+                <!-- Sección Derecha: Comanda Actual -->
+                <div class="cart-card">
+                    <h3 id="comanda-title">Nueva Comanda</h3>
+                    <div class="form-group" style="margin-top: 12px;">
+                        <label for="table-select">Asignar Mesa *</label>
+                        <select id="table-select" class="form-control" required>
+                            <option value="">Seleccione Mesa...</option>
+                            <option value="Mesa 1">Mesa 1</option>
+                            <option value="Mesa 2">Mesa 2</option>
+                            <option value="Mesa 3">Mesa 3</option>
+                            <option value="Mesa 4">Mesa 4</option>
+                            <option value="Mesa 5">Mesa 5</option>
+                            <option value="Mesa 6">Mesa 6</option>
+                            <option value="Llevar">Para Llevar</option>
+                        </select>
+                    </div>
+
+                    <div class="cart-items" id="cart-items">
+                        <div style="text-align: center; color: var(--text-muted); padding: 20px 0;">Comanda vacía. Seleccione productos del menú.</div>
+                    </div>
+
+                    <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 1.25rem; margin-bottom: 16px; border-top: 1px solid var(--border-color); padding-top: 12px;">
+                        <span>Subtotal:</span>
+                        <span id="cart-subtotal">$0.00</span>
+                    </div>
+
+                    <button class="btn btn-success" style="width: 100%;" onclick="submitOrder()">
+                        📥 Confirmar / Enviar Comanda
+                    </button>
+                    <button class="btn btn-danger" id="btn-cancel-edit" style="width: 100%; margin-top: 8px; display: none;" onclick="cancelEditingState()">
+                        Cancelar Edición
+                    </button>
+                </div>
+            </div>
+
+            <!-- Listado de comandas puestas por el garzón para edición o anulación -->
+            <div class="waiter-orders">
+                <h3>Monitoreo y Edición de Pedidos (Salón)</h3>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 10px;">
+                    * Regla de Negocio: Modificación o anulación únicamente en estado <strong>Pendiente</strong>.
+                </p>
+                <div class="audit-table-wrapper">
+                    <table class="audit-table">
+                        <thead>
+                            <tr>
+                                <th>Nº Pedido</th>
+                                <th>Mesa</th>
+                                <th>Detalle</th>
+                                <th>Total</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="waiter-orders-table-body">
+                            <!-- Inyectado por JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- VISTA 3: PANTALLA DE COCINA (FIFO) -->
+        <section id="view-kitchen" style="display: none;">
+            <div class="kitchen-header">
+                <h2>Pantalla de Cocina / Barista (Kanban FIFO)</h2>
+                <div>
+                    <span class="badge badge-pendiente" style="padding: 6px 12px; font-size: 0.85rem;">Orden cronológico: Más antiguo primero</span>
+                </div>
+            </div>
+
+            <div class="kitchen-grid" id="kitchen-kanban-board">
+                <!-- Tarjetas de órdenes dinámicas -->
+            </div>
+        </section>
+
+        <!-- VISTA 4: ADMINISTRADOR Y CAJA -->
+        <section id="view-admin" style="display: none;">
+            <h2>Administración Centralizada</h2>
+            
+            <div class="admin-tabs">
+                <button class="admin-tab-btn active" onclick="switchAdminTab('caja')" id="tab-caja">Panel de Caja (Cierre diario)</button>
+                <button class="admin-tab-btn" onclick="switchAdminTab('menu')" id="tab-menu">Mantenimiento de Menú</button>
+                <button class="admin-tab-btn" onclick="switchAdminTab('logs')" id="tab-logs">Auditoría (Logs de Seguridad)</button>
+            </div>
+
+            <!-- Pestaña 4a: Panel de Caja -->
+            <div id="admin-caja-sec">
+                <div class="dashboard-stats">
+                    <div class="stat-card">
+                        <h3>Ventas Acumuladas Hoy</h3>
+                        <p class="stat-val" id="stats-total-recaudado">$0.00</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Pedidos Pagados</h3>
+                        <p class="stat-val" id="stats-pedidos-pagados" style="color: var(--primary);">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Pendientes de Pago</h3>
+                        <p class="stat-val" id="stats-pedidos-listos" style="color: var(--warning);">0</p>
+                    </div>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                    <h3>Cobro de Pedidos Entregados</h3>
+                    <button class="btn btn-warning" onclick="triggerCierreCaja()">🔒 Ejecutar Cierre de Caja</button>
+                </div>
+
+                <div class="audit-table-wrapper">
+                    <table class="audit-table">
+                        <thead>
+                            <tr>
+                                <th>Pedido</th>
+                                <th>Mesa</th>
+                                <th>Detalle</th>
+                                <th>Subtotal</th>
+                                <th>Estado</th>
+                                <th>Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-caja-table-body">
+                            <!-- Inyectado por JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Pestaña 4b: Mantenimiento del Menú -->
+            <div id="admin-menu-sec" style="display: none;">
+                <h3 style="margin-bottom: 12px;">Mantenimiento Diario de Precios e Inventario</h3>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px;">
+                    Cualquier cambio de precio o estado "Agotado" se refleja inmediatamente en el menú digital del Garzón.
+                </p>
+                <div class="menu-maintainer-list" id="admin-menu-list">
+                    <!-- Productos administrados aquí -->
+                </div>
+            </div>
+
+            <!-- Pestaña 4c: Logs de Auditoría -->
+            <div id="admin-logs-sec" style="display: none;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                    <h3>Historial de Auditoría de Seguridad</h3>
+                    <button class="btn btn-danger" style="padding: 4px 10px; font-size: 0.8rem;" onclick="clearAuditLogs()">Limpiar Logs</button>
+                </div>
+                <div class="audit-table-wrapper">
+                    <table class="audit-table">
+                        <thead>
+                            <tr>
+                                <th>Marca de Tiempo</th>
+                                <th>Usuario</th>
+                                <th>Rol</th>
+                                <th>Acción Crítica</th>
+                            </tr>
+                        </thead>
+                        <tbody id="audit-logs-table-body">
+                            <!-- Logs generados por JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- CONTENEDOR DE NOTIFICACIONES TOAST (WebSocket simulado < 2s) -->
+    <div class="toast-container" id="toast-container" aria-live="polite"></div>
+
+    <!-- MODAL POPUP PARA RESULTADOS DE CIERRE DE CAJA -->
+    <div class="modal-overlay" id="close-cash-modal" style="display: none;">
+        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+            <h3 id="modal-title">Reporte Técnico de Cierre de Caja</h3>
+            <hr style="border-color: var(--border-color); margin-bottom: 12px;">
+            <div style="font-size: 0.95rem; line-height: 1.6; margin-bottom: 20px;">
+                <p><strong>Operador:</strong> <span id="cierre-operador">N/A</span></p>
+                <p><strong>Fecha/Hora:</strong> <span id="cierre-fecha">N/A</span></p>
+                <p><strong>Pedidos Procesados (Pagados):</strong> <span id="cierre-cant-pedidos">0</span></p>
+                <p style="font-size: 1.2rem; color: var(--success); margin: 8px 0;"><strong>Venta Bruta Total:</strong> <span id="cierre-venta-total">$0.00</span></p>
+                <p><strong>Pedidos Anulados durante la jornada:</strong> <span id="cierre-cant-anulados">0</span></p>
+                
+                <h4 style="margin-top: 14px; margin-bottom: 6px;">Ventas por Producto:</h4>
+                <div id="cierre-desglose" style="background: var(--bg-card); padding: 8px; border-radius: 6px; max-height: 150px; overflow-y: auto;">
+                    <!-- Detalle por item -->
+                </div>
+            </div>
+            <div style="display: flex; gap: 8px; justify-content: flex-end;">
+                <button class="btn btn-primary" onclick="confirmResetCaja()">Confirmar y Resetear Jornada</button>
+                <button class="btn btn-danger" onclick="document.getElementById('close-cash-modal').style.display='none'">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONTROL INFERIOR DE INACTIVIDAD (SIMULACIÓN AUTOMÁTICA) -->
+    <div style="position: fixed; bottom: 0; left: 0; right: 0; background: #111827; border-top: 2px solid var(--border-color); padding: 8px 16px; display: flex; justify-content: space-between; align-items: center; z-index: 998; font-size: 0.8rem;">
+        <div id="inactivity-timer-display">⏱️ Autocierre de sesión en: 30:00 (Inactivo)</div>
+        <div style="display: flex; gap: 8px;">
+            <button class="btn-evaluator" style="font-size: 0.75rem; padding: 4px 8px; background-color: var(--danger);" onclick="simulateInactivityTimeout()">Simular +30 Min de Inactividad</button>
+            <button class="btn-evaluator" style="font-size: 0.75rem; padding: 4px 8px;" onclick="resetInactivityTimer()">Actividad</button>
+        </div>
+    </div>
+
+    <script>
+        /* ==========================================================================
+           BASE DE DATOS INICIAL Y PERSISTENCIA DE ESTADO
+           ========================================================================== */
+        const INITIAL_PRODUCTS = [
+            { id: 1, name: "Café Americano", price: 3.50, category: "Café", available: true },
+            { id: 2, name: "Caffè Latte", price: 4.25, category: "Café", available: true },
+            { id: 3, name: "Muffin Arándanos", price: 3.75, category: "Pastelería", available: true },
+            { id: 4, name: "Croissant", price: 2.95, category: "Pastelería", available: true },
+            { id: 5, name: "Té Helado", price: 3.00, category: "Bebidas Frías", available: true },
+            { id: 6, name: "Jugo de Naranja", price: 3.25, category: "Bebidas Frías", available: true },
+            { id: 7, name: "Papas Rústicas", price: 4.00, category: "Snacks", available: true },
+            { id: 8, name: "Tostón de Palta", price: 4.50, category: "Snacks", available: true }
+        ];
+
+        const ROLES = {
+            '11.111.111-1': { role: 'Garzón', name: 'Juan Waiter', pass: 'garzon123' },
+            '22.222.222-2': { role: 'Barista', name: 'Lucía Kitchen', pass: 'cocina123' },
+            '33.333.333-3': { role: 'Administrador', name: 'Admin Don Cafe', pass: 'admin123' }
+        };
+
+        let state = {
+            menu: [],
+            orders: [],
+            logs: [],
+            currentUser: null,
+            activeCategory: "Café",
+            currentCart: [], // { productId, qty }
+            editingOrderId: null,
+            adminTab: "caja"
+        };
+
+        // Tiempo del temporizador de inactividad
+        let inactivityTimeoutLimit = 30 * 60; // 30 minutos en segundos
+        let secondsLeft = inactivityTimeoutLimit;
+        let inactivityInterval = null;
+
+        /* ==========================================================================
+           INICIALIZADOR DEL SISTEMA (CARGA LOCALSTORAGE)
+           ========================================================================== */
+        function initSystem() {
+            // Cargar de LocalStorage o inicializar defaults
+            state.menu = JSON.parse(localStorage.getItem('cafe_menu')) || INITIAL_PRODUCTS;
+            state.orders = JSON.parse(localStorage.getItem('cafe_orders')) || [];
+            state.logs = JSON.parse(localStorage.getItem('cafe_logs')) || [];
+            state.currentUser = JSON.parse(localStorage.getItem('cafe_session')) || null;
+
+            saveStateToStorage();
+
+            // Formateador dinámico para el campo RUT en Login
+            const rutInput = document.getElementById('login-rut');
+            if (rutInput) {
+                rutInput.addEventListener('input', (e) => handleRutInput(e));
+            }
+
+            // Monitorear clicks para reiniciar contador de inactividad
+            document.addEventListener('click', resetInactivityTimer);
+            document.addEventListener('keypress', resetInactivityTimer);
+
+            startInactivityTimer();
+
+            // Renderizado inicial según sesión activa
+            if (state.currentUser) {
+                switchGlobalView(getRoleDefaultView(state.currentUser.role));
+            } else {
+                switchGlobalView('login');
+            }
+
+            renderMenuMaintainer();
+            renderWaiterMenu();
+            renderWaiterOrders();
+            renderKitchenOrders();
+            renderCajaPanel();
+            renderAuditLogs();
+            updateSessionHeader();
+        }
+
+        function saveStateToStorage() {
+            localStorage.setItem('cafe_menu', JSON.stringify(state.menu));
+            localStorage.setItem('cafe_orders', JSON.stringify(state.orders));
+            localStorage.setItem('cafe_logs', JSON.stringify(state.logs));
+            localStorage.setItem('cafe_session', JSON.stringify(state.currentUser));
+        }
+
+        /* ==========================================================================
+           MÓDULO DE AUTENTICACIÓN Y CONTROL DE ACCESO
+           ========================================================================== */
+        function handleRutInput(e) {
+            let val = e.target.value.replace(/[^0-9kK]/g, '');
+            if (val.length > 9) val = val.slice(0, 9);
+            if (val.length === 0) {
+                e.target.value = '';
+                return;
+            }
+            let formatted = '';
+            if (val.length === 1) {
+                formatted = val;
+            } else {
+                let dv = val.slice(-1);
+                let num = val.slice(0, -1);
+                if (num.length <= 3) {
+                    formatted = num + '-' + dv;
+                } else if (num.length <= 6) {
+                    formatted = num.slice(0, num.length - 3) + '.' + num.slice(num.length - 3) + '-' + dv;
+                } else {
+                    formatted = num.slice(0, num.length - 6) + '.' + num.slice(num.length - 6, num.length - 3) + '.' + num.slice(num.length - 3) + '-' + dv;
+                }
+            }
+            e.target.value = formatted.toUpperCase();
+        }
+
+        function validateChileanRut(rut) {
+            if (!/^[0-9]{1,2}\.[0-9]{3}\.[0-9]{3}-[0-9kK]{1}$/.test(rut)) return false;
+            let clean = rut.replace(/\./g, '').split('-');
+            let num = clean[0];
+            let dv = clean[1].toLowerCase();
+            
+            let sum = 0;
+            let mul = 2;
+            for (let i = num.length - 1; i >= 0; i--) {
+                sum += parseInt(num.charAt(i)) * mul;
+                mul = mul === 7 ? 2 : mul + 1;
+            }
+            let expected = 11 - (sum % 11);
+            let expectedDv = expected === 11 ? '0' : expected === 10 ? 'k' : expected.toString();
+            return dv === expectedDv;
+        }
+
+        function handleLogin(event) {
+            event.preventDefault();
+            const rut = document.getElementById('login-rut').value;
+            const pass = document.getElementById('login-pass').value;
+            const errorElement = document.getElementById('login-error-msg');
+
+            errorElement.style.display = 'none';
+
+            if (!validateChileanRut(rut)) {
+                errorElement.innerText = "Datos incorrectos, intente nuevamente";
+                errorElement.style.display = 'block';
+                return;
+            }
+
+            const userMatch = ROLES[rut];
+            if (userMatch && userMatch.pass === pass) {
+                state.currentUser = {
+                    rut: rut,
+                    name: userMatch.name,
+                    role: userMatch.role,
+                    loginTime: new Date().toLocaleTimeString()
+                };
+                saveStateToStorage();
+                addAuditLog(state.currentUser.rut, state.currentUser.role, "Inicio de sesión exitoso");
+                updateSessionHeader();
+                showToast(`Bienvenido(a), ${state.currentUser.name}`, 'success');
+                switchGlobalView(getRoleDefaultView(state.currentUser.role));
+            } else {
+                errorElement.innerText = "Datos incorrectos, intente nuevamente";
+                errorElement.style.display = 'block';
+            }
+        }
+
+        function handleLogout(isAuto = false) {
+            if (state.currentUser) {
+                addAuditLog(
+                    state.currentUser.rut, 
+                    state.currentUser.role, 
+                    isAuto ? "Cierre automático por inactividad (30 min)" : "Cierre de sesión voluntario"
+                );
+            }
+            state.currentUser = null;
+            state.currentCart = [];
+            state.editingOrderId = null;
+            saveStateToStorage();
+            updateSessionHeader();
+            switchGlobalView('login');
+            if (isAuto) {
+                alert("⚠️ Su sesión ha expirado por inactividad de 30 minutos.");
+            } else {
+                showToast("Sesión cerrada exitosamente", "warning");
+            }
+        }
+
+        function getRoleDefaultView(role) {
+            if (role === 'Garzón') return 'waiter';
+            if (role === 'Barista') return 'kitchen';
+            if (role === 'Administrador') return 'admin';
+            return 'login';
+        }
+
+        /* ==========================================================================
+           LOGICA DEL TEMPORIZADOR DE INACTIVIDAD (30 MINUTOS)
+           ========================================================================== */
+        function startInactivityTimer() {
+            clearInterval(inactivityInterval);
+            secondsLeft = inactivityTimeoutLimit;
+            inactivityInterval = setInterval(() => {
+                if (state.currentUser) {
+                    secondsLeft--;
+                    updateInactivityDisplay();
+                    if (secondsLeft <= 0) {
+                        handleLogout(true);
+                    }
+                } else {
+                    document.getElementById('inactivity-timer-display').innerText = "⏱️ Sin sesión activa";
+                }
+            }, 1000);
+        }
+
+        function resetInactivityTimer() {
+            secondsLeft = inactivityTimeoutLimit;
+            updateInactivityDisplay();
+        }
+
+        function updateInactivityDisplay() {
+            const m = Math.floor(secondsLeft / 60).toString().padStart(2, '0');
+            const s = (secondsLeft % 60).toString().padStart(2, '0');
+            document.getElementById('inactivity-timer-display').innerText = `⏱️ Inactividad (Auto-Logout): ${m}:${s}`;
+        }
+
+        function simulateInactivityTimeout() {
+            secondsLeft = 1; // Disparará el callback en 1 segundo
+        }
+
+        /* ==========================================================================
+           SELECTOR GLOBAL DE VISTAS (PARA EVALUADORES / EXAMINADORES)
+           ========================================================================== */
+        function switchGlobalView(viewName) {
+            const views = ['login', 'waiter', 'kitchen', 'admin'];
+            views.forEach(v => {
+                document.getElementById(`view-${v}`).style.display = (v === viewName) ? 'block' : 'none';
+                const evalBtn = document.getElementById(`eval-${v}`);
+                if (evalBtn) {
+                    if (v === viewName) evalBtn.classList.add('active');
+                    else evalBtn.classList.remove('active');
+                }
+            });
+
+            // Forzar simulación de usuario si el evaluador navega directamente
+            if (viewName !== 'login' && !state.currentUser) {
+                mockUserSessionForView(viewName);
+            }
+
+            renderWaiterMenu();
+            renderWaiterOrders();
+            renderKitchenOrders();
+            renderCajaPanel();
+            renderAuditLogs();
+        }
+
+        function mockUserSessionForView(viewName) {
+            if (viewName === 'waiter') {
+                state.currentUser = { rut: '11.111.111-1', name: 'Juan (Mock Evaluador)', role: 'Garzón' };
+            } else if (viewName === 'kitchen') {
+                state.currentUser = { rut: '22.222.222-2', name: 'Lucía (Mock Evaluador)', role: 'Barista' };
+            } else if (viewName === 'admin') {
+                state.currentUser = { rut: '33.333.333-3', name: 'Admin (Mock Evaluador)', role: 'Administrador' };
+            }
+            saveStateToStorage();
+            updateSessionHeader();
+            showToast(`Evaluación: Entrando con rol de ${state.currentUser.role}`, 'warning');
+        }
+
+        function updateSessionHeader() {
+            const container = document.getElementById('session-display');
+            if (state.currentUser) {
+                container.innerHTML = `
+                    <span>👤 <strong>${state.currentUser.name}</strong> (${state.currentUser.role})</span>
+                    <button class="btn btn-danger" style="padding: 4px 8px; font-size: 0.8rem;" onclick="handleLogout(false)">Salir</button>
+                `;
+            } else {
+                container.innerHTML = `<span>🔒 Iniciar Sesión</span>`;
+            }
+        }
+
+        /* ==========================================================================
+           VISTA INTERFAZ DE GARZÓN - LÓGICA DE NEGOCIO Y RENDERIZADO
+           ========================================================================== */
+        function renderWaiterMenu() {
+            // Filtrar y renderizar categorías de menú
+            const categories = ["Café", "Pastelería", "Bebidas Frías", "Snacks"];
+            const tabsContainer = document.getElementById('category-tabs');
+            tabsContainer.innerHTML = '';
+            
+            categories.forEach(cat => {
+                const button = document.createElement('button');
+                button.className = `category-tab ${state.activeCategory === cat ? 'active' : ''}`;
+                button.innerText = cat;
+                button.setAttribute('role', 'tab');
+                button.setAttribute('aria-selected', state.activeCategory === cat ? 'true' : 'false');
+                button.onclick = () => {
+                    state.activeCategory = cat;
+                    renderWaiterMenu();
+                };
+                tabsContainer.appendChild(button);
+            });
+
+            // Grid de Productos disponibles (No ocultados por admin)
+            const gridContainer = document.getElementById('products-grid');
+            gridContainer.innerHTML = '';
+
+            const filteredProducts = state.menu.filter(p => p.category === state.activeCategory);
+            
+            filteredProducts.forEach(p => {
+                const card = document.createElement('div');
+                card.className = `product-card ${!p.available ? 'sold-out' : ''}`;
+                card.innerHTML = `
+                    <div>
+                        <div class="product-name">${p.name}</div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted);">${p.category}</div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
+                        <span class="product-price">$${p.price.toFixed(2)}</span>
+                        ${p.available ? 
+                            `<button class="btn btn-primary" style="padding: 6px 12px; font-size: 0.85rem;" onclick="addToCart(${p.id})">+ Agregar</button>` : 
+                            `<span class="badge" style="background:#551a1a; color:#fca5a5;">AGOTADO</span>`
+                        }
+                    </div>
+                `;
+                gridContainer.appendChild(card);
+            });
+        }
+
+        function addToCart(productId) {
+            const product = state.menu.find(p => p.id === productId);
+            if (!product || !product.available) return;
+
+            const existing = state.currentCart.find(item => item.productId === productId);
+            if (existing) {
+                existing.qty++;
+            } else {
+                state.currentCart.push({ productId, qty: 1 });
+            }
+            renderCart();
+        }
+
+        function updateCartQty(productId, change) {
+            const itemIndex = state.currentCart.findIndex(item => item.productId === productId);
+            if (itemIndex === -1) return;
+
+            state.currentCart[itemIndex].qty += change;
+            if (state.currentCart[itemIndex].qty <= 0) {
+                state.currentCart.splice(itemIndex, 1);
+            }
+            renderCart();
+        }
+
+        function renderCart() {
+            const container = document.getElementById('cart-items');
+            const subtotalDisplay = document.getElementById('cart-subtotal');
+            const comandaTitle = document.getElementById('comanda-title');
+            
+            if (state.editingOrderId) {
+                comandaTitle.innerHTML = `✍️ Editando Pedido <span style="color:var(--warning)">#${state.editingOrderId}</span>`;
+                document.getElementById('btn-cancel-edit').style.display = 'block';
+            } else {
+                comandaTitle.innerText = "Nueva Comanda";
+                document.getElementById('btn-cancel-edit').style.display = 'none';
+            }
+
+            container.innerHTML = '';
+            let subtotal = 0;
+
+            if (state.currentCart.length === 0) {
+                container.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 20px 0;">Comanda vacía. Seleccione productos del menú.</div>`;
+                subtotalDisplay.innerText = "$0.00";
+                return;
+            }
+
+            state.currentCart.forEach(item => {
+                const product = state.menu.find(p => p.id === item.productId);
+                if (!product) return;
+                const cost = product.price * item.qty;
+                subtotal += cost;
+
+                const itemRow = document.createElement('div');
+                itemRow.className = 'cart-item';
+                itemRow.innerHTML = `
+                    <div>
+                        <div style="font-weight: 600;">${product.name}</div>
+                        <div style="font-size: 0.85rem; color: var(--warning);">$${product.price.toFixed(2)} c/u</div>
+                    </div>
+                    <div class="cart-controls">
+                        <button class="btn-qty" onclick="updateCartQty(${product.id}, -1)">-</button>
+                        <span style="min-width: 24px; text-align: center; font-weight: bold;">${item.qty}</span>
+                        <button class="btn-qty" onclick="updateCartQty(${product.id}, 1)">+</button>
+                        <span style="margin-left: 8px; font-weight: bold; min-width: 50px; text-align: right;">$${cost.toFixed(2)}</span>
+                    </div>
+                `;
+                container.appendChild(itemRow);
+            });
+
+            subtotalDisplay.innerText = `$${subtotal.toFixed(2)}`;
+        }
+
+        function submitOrder() {
+            const tableSelect = document.getElementById('table-select');
+            const tableName = tableSelect.value;
+
+            if (!tableName) {
+                alert("Debe asignar una mesa para la comanda.");
+                return;
+            }
+            if (state.currentCart.length === 0) {
+                alert("La comanda actual no posee productos.");
+                return;
+            }
+
+            const parsedItems = state.currentCart.map(c => {
+                const prod = state.menu.find(p => p.id === c.productId);
+                return {
+                    id: prod.id,
+                    name: prod.name,
+                    price: prod.price,
+                    qty: c.qty
+                };
+            });
+
+            const total = parsedItems.reduce((acc, current) => acc + (current.price * current.qty), 0);
+
+            if (state.editingOrderId) {
+                // Modificar pedido existente (Debe estar Pendiente para poder modificarse)
+                const orderIndex = state.orders.findIndex(o => o.id === state.editingOrderId);
+                if (orderIndex === -1 || state.orders[orderIndex].status !== 'Pendiente') {
+                    showToast("Error: No es posible editar el pedido actual por un cambio de estado en cocina.", "danger");
+                    cancelEditingState();
+                    return;
+                }
+                
+                state.orders[orderIndex].items = parsedItems;
+                state.orders[orderIndex].total = total;
+                state.orders[orderIndex].table = tableName;
+
+                addAuditLog(
+                    state.currentUser ? state.currentUser.rut : "MOCK", 
+                    state.currentUser ? state.currentUser.role : "Garzón", 
+                    `Editó la comanda #${state.editingOrderId} (${tableName})`
+                );
+
+                showToast(`Comanda #${state.editingOrderId} modificada con éxito`, "success");
+                cancelEditingState();
+            } else {
+                // Nuevo Pedido
+                const newOrder = {
+                    id: state.orders.length > 0 ? Math.max(...state.orders.map(o => o.id)) + 1 : 1001,
+                    table: tableName,
+                    items: parsedItems,
+                    status: 'Pendiente', // Estados: Pendiente -> En preparación -> Listo -> Pagado
+                    timestamp: new Date().toISOString(),
+                    total: total,
+                    createdBy: state.currentUser ? state.currentUser.name : "Garzón"
+                };
+
+                state.orders.push(newOrder);
+
+                addAuditLog(
+                    state.currentUser ? state.currentUser.rut : "MOCK", 
+                    state.currentUser ? state.currentUser.role : "Garzón", 
+                    `Generó la comanda #${newOrder.id} (${tableName})`
+                );
+
+                showToast(`Comanda #${newOrder.id} despachada a Cocina`, "success");
+            }
+
+            // Limpieza
+            state.currentCart = [];
+            tableSelect.value = '';
+            saveStateToStorage();
+            renderCart();
+            renderWaiterOrders();
+            renderKitchenOrders();
+            renderCajaPanel();
+        }
+
+        function cancelEditingState() {
+            state.editingOrderId = null;
+            state.currentCart = [];
+            document.getElementById('table-select').value = '';
+            document.getElementById('btn-cancel-edit').style.display = 'none';
+            renderCart();
+        }
+
+        function editWaiterOrder(orderId) {
+            const order = state.orders.find(o => o.id === orderId);
+            if (!order) return;
+
+            // REGLA DE NEGOCIO: Edición sólo admisible en estado PENDIENTE
+            if (order.status !== 'Pendiente') {
+                showToast("Acción prohibida: Solo pedidos con estado 'Pendiente' pueden ser modificados.", "danger");
+                return;
+            }
+
+            state.editingOrderId = order.id;
+            state.currentCart = order.items.map(item => ({
+                productId: item.id,
+                qty: item.qty
+            }));
+
+            document.getElementById('table-select').value = order.table;
+            renderCart();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function annulWaiterOrder(orderId) {
+            const orderIndex = state.orders.findIndex(o => o.id === orderId);
+            if (orderIndex === -1) return;
+
+            const order = state.orders[orderIndex];
+
+            // REGLA DE NEGOCIO: Anulación sólo admisible en estado PENDIENTE
+            if (order.status !== 'Pendiente') {
+                showToast("Acción prohibida: Solo pedidos con estado 'Pendiente' pueden ser anulados.", "danger");
+                return;
+            }
+
+            if (confirm(`¿Está seguro de que desea anular la Comanda #${order.id}?`)) {
+                state.orders[orderIndex].status = "Anulado";
+                addAuditLog(
+                    state.currentUser ? state.currentUser.rut : "MOCK", 
+                    state.currentUser ? state.currentUser.role : "Garzón", 
+                    `Anuló la comanda #${order.id}`
+                );
+                saveStateToStorage();
+                showToast(`Comanda #${order.id} anulada`, "danger");
+                renderWaiterOrders();
+                renderKitchenOrders();
+                renderCajaPanel();
+            }
+        }
+
+        function renderWaiterOrders() {
+            const tbody = document.getElementById('waiter-orders-table-body');
+            tbody.innerHTML = '';
+
+            // Mostrar todos los pedidos activos menos los anulados o pagados (o todos para auditoría rápida del garzón)
+            const activeOrders = state.orders.filter(o => o.status !== 'Pagado' && o.status !== 'Anulado');
+
+            if (activeOrders.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--text-muted);">Sin pedidos activos en el salón.</td></tr>`;
+                return;
+            }
+
+            activeOrders.forEach(o => {
+                const tr = document.createElement('tr');
+                const itemsText = o.items.map(i => `${i.qty}x ${i.name}`).join(', ');
+                const isEditable = o.status === 'Pendiente';
+
+                tr.innerHTML = `
+                    <td><strong>#${o.id}</strong></td>
+                    <td>${o.table}</td>
+                    <td style="font-size: 0.85rem; max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${itemsText}">${itemsText}</td>
+                    <td>$${o.total.toFixed(2)}</td>
+                    <td><span class="badge badge-${o.status.toLowerCase()}">${o.status}</span></td>
+                    <td>
+                        <button class="btn btn-warning" style="padding: 4px 8px; font-size: 0.75rem; width: auto; display: inline-flex;" 
+                                ${!isEditable ? 'disabled' : ''} onclick="editWaiterOrder(${o.id})">Editar</button>
+                        <button class="btn btn-danger" style="padding: 4px 8px; font-size: 0.75rem; width: auto; display: inline-flex;" 
+                                ${!isEditable ? 'disabled' : ''} onclick="annulWaiterOrder(${o.id})">Anular</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        /* ==========================================================================
+           VISTA 3: PANTALLA DE COCINA / BARISTA - FIFO Y WEBSOCKETS MOCK
+           ========================================================================== */
+        function renderKitchenOrders() {
+            const board = document.getElementById('kitchen-kanban-board');
+            board.innerHTML = '';
+
+            // REGLA DE NEGOCIO: Estricto flujo FIFO (First In, First Out)
+            // Filtra pedidos en cola para cocina ("Pendiente" o "En preparación") ordenados cronológicamente (antiguos primero)
+            const kitchenQueue = state.orders
+                .filter(o => o.status === 'Pendiente' || o.status === 'En preparación')
+                .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+
+            if (kitchenQueue.length === 0) {
+                board.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--text-muted); border: 2px dashed var(--border-color); border-radius:12px;">
+                    🍳 Cocina Despejada - No hay comandas pendientes.
+                </div>`;
+                return;
+            }
+
+            kitchenQueue.forEach(o => {
+                const elapsedSeconds = Math.floor((new Date() - new Date(o.timestamp)) / 1000);
+                const isNew = o.status === 'Pendiente';
+
+                const card = document.createElement('article');
+                card.className = `kitchen-card status-${o.status.toLowerCase()}`;
+                
+                // Formateador de tiempo transcurrido
+                let timeStr = elapsedSeconds < 60 ? `${elapsedSeconds} seg` : `${Math.floor(elapsedSeconds / 60)} min`;
+
+                card.innerHTML = `
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                        <div>
+                            <span style="font-size:0.75rem; color:var(--text-muted);">Pedido</span>
+                            <h3 style="margin-top:-4px;">#${o.id}</h3>
+                        </div>
+                        <span class="badge badge-${o.status.toLowerCase()}">${o.status === 'Pendiente' ? 'Pendiente (FIFO)' : o.status}</span>
+                    </div>
+                    
+                    <div style="margin-top:10px; font-size:1.1rem; font-weight:700; color:var(--warning);">
+                        📍 ${o.table}
+                    </div>
+
+                    <div style="margin-top:10px; background:var(--bg-card); padding:10px; border-radius:6px; border:1px solid var(--border-color);">
+                        <ul style="list-style-type: none; padding-left:0;">
+                            ${o.items.map(i => `<li style="padding: 3px 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                                <strong style="color:var(--success); font-size:1.15rem;">${i.qty}</strong> x ${i.name}
+                            </li>`).join('')}
+                        </ul>
+                    </div>
+
+                    <div class="kitchen-timer">
+                        ⏳ Transcurrido: <strong style="${elapsedSeconds > 180 ? 'color:var(--danger);' : ''}">${timeStr}</strong>
+                    </div>
+
+                    <div style="margin-top:15px; display:flex; gap:8px;">
+                        ${isNew ? 
+                            `<button class="btn btn-primary" style="flex:1; padding:8px;" onclick="changeOrderStatus(${o.id}, 'En preparación')">👨‍🍳 Preparar</button>` :
+                            `<button class="btn btn-success" style="flex:1; padding:8px;" onclick="changeOrderStatus(${o.id}, 'Listo')">✅ Listo para Servir</button>`
+                        }
+                    </div>
+                `;
+                board.appendChild(card);
+            });
+        }
+
+        function changeOrderStatus(orderId, newStatus) {
+            const orderIndex = state.orders.findIndex(o => o.id === orderId);
+            if (orderIndex === -1) return;
+
+            const order = state.orders[orderIndex];
+            state.orders[orderIndex].status = newStatus;
+            saveStateToStorage();
+
+            addAuditLog(
+                state.currentUser ? state.currentUser.rut : "MOCK_KITCHEN", 
+                state.currentUser ? state.currentUser.role : "Barista", 
+                `Cambió comanda #${order.id} a estado '${newStatus}'`
+            );
+
+            showToast(`Pedido #${order.id} pasó a '${newStatus}'`, "success");
+
+            // SIMULACIÓN WEBSOCKETS (<2 SEGUNDOS):
+            // Si pasa a estado "Listo", notificar reactivamente al Garzón de manera inmediata
+            if (newStatus === 'Listo') {
+                setTimeout(() => {
+                    triggerWaiterNotification(order.id, order.table);
+                }, 800); // Demora simulada de 800 milisegundos (menor a 2s de especificación técnica)
+            }
+
+            renderKitchenOrders();
+            renderWaiterOrders();
+            renderCajaPanel();
+        }
+
+        function triggerWaiterNotification(orderId, table) {
+            // Emite una alerta visual interactiva visible en cualquier parte del sistema
+            showToast(`📢 ¡NOTIFICACIÓN DE COCINA! El Pedido #${orderId} para la "${table}" está LISTO para ser servido.`, "success", 8000);
+        }
+
+        // Refrescar el contador de tiempo de la cocina automáticamente cada 10 segundos
+        setInterval(() => {
+            if (document.getElementById('view-kitchen').style.display === 'block') {
+                renderKitchenOrders();
+            }
+        }, 10000);
+
+        /* ==========================================================================
+           VISTA 4: INTERFAZ ADMINISTRADOR Y PANEL DE CAJA
+           ========================================================================== */
+        function switchAdminTab(tabName) {
+            state.adminTab = tabName;
+            const tabs = ['caja', 'menu', 'logs'];
+            tabs.forEach(t => {
+                document.getElementById(`admin-${t}-sec`).style.display = (t === tabName) ? 'block' : 'none';
+                const btn = document.getElementById(`tab-${t}`);
+                if (btn) {
+                    if (t === tabName) btn.classList.add('active');
+                    else btn.classList.remove('active');
+                }
+            });
+            if (tabName === 'logs') renderAuditLogs();
+            if (tabName === 'menu') renderMenuMaintainer();
+            if (tabName === 'caja') renderCajaPanel();
+        }
+
+        function renderCajaPanel() {
+            const tbody = document.getElementById('admin-caja-table-body');
+            tbody.innerHTML = '';
+
+            // Mostrar órdenes con estado "Listo" o "Pagado" para control de flujo de caja
+            const checkoutQueue = state.orders.filter(o => o.status === 'Listo');
+            
+            // Estadísticas en tiempo real de la caja
+            const pagados = state.orders.filter(o => o.status === 'Pagado');
+            const totalRecaudado = pagados.reduce((acc, curr) => acc + curr.total, 0);
+
+            document.getElementById('stats-total-recaudado').innerText = `$${totalRecaudado.toFixed(2)}`;
+            document.getElementById('stats-pedidos-pagados').innerText = pagados.length;
+            document.getElementById('stats-pedidos-listos').innerText = checkoutQueue.length;
+
+            if (checkoutQueue.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--text-muted);">No hay pedidos en cola listos para pago.</td></tr>`;
+                return;
+            }
+
+            checkoutQueue.forEach(o => {
+                const tr = document.createElement('tr');
+                const detail = o.items.map(i => `${i.qty}x ${i.name}`).join(', ');
+
+                tr.innerHTML = `
+                    <td><strong>#${o.id}</strong></td>
+                    <td>${o.table}</td>
+                    <td>${detail}</td>
+                    <td><strong>$${o.total.toFixed(2)}</strong></td>
+                    <td><span class="badge badge-listo">Listo</span></td>
+                    <td>
+                        <button class="btn btn-success" style="padding: 4px 10px; font-size: 0.8rem; width:auto;" onclick="payOrder(${o.id})">💰 Registrar Pago</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function payOrder(orderId) {
+            const index = state.orders.findIndex(o => o.id === orderId);
+            if (index === -1) return;
+
+            state.orders[index].status = 'Pagado';
+            saveStateToStorage();
+
+            addAuditLog(
+                state.currentUser ? state.currentUser.rut : "MOCK_CASHIER", 
+                state.currentUser ? state.currentUser.role : "Cajero/Admin", 
+                `Registró Pago y Boleta para comanda #${orderId}`
+            );
+
+            showToast(`Pedido #${orderId} pagado con éxito`, "success");
+            renderCajaPanel();
+            renderWaiterOrders();
+        }
+
+        /* LÓGICA DE CIERRE DE CAJA */
+        function triggerCierreCaja() {
+            const pagados = state.orders.filter(o => o.status === 'Pagado');
+            const anulados = state.orders.filter(o => o.status === 'Anulado');
+            const totalRecaudado = pagados.reduce((acc, curr) => acc + curr.total, 0);
+
+            document.getElementById('cierre-operador').innerText = state.currentUser ? `${state.currentUser.name} (${state.currentUser.role})` : "Operador General";
+            document.getElementById('cierre-fecha').innerText = new Date().toLocaleString();
+            document.getElementById('cierre-cant-pedidos').innerText = pagados.length;
+            document.getElementById('cierre-venta-total').innerText = `$${totalRecaudado.toFixed(2)}`;
+            document.getElementById('cierre-cant-anulados').innerText = anulados.length;
+
+            // Desglose de popularidad de artículos vendidos
+            const itemCounts = {};
+            pagados.forEach(order => {
+                order.items.forEach(item => {
+                    itemCounts[item.name] = (itemCounts[item.name] || 0) + item.qty;
+                });
+            });
+
+            const desgloseContainer = document.getElementById('cierre-desglose');
+            desgloseContainer.innerHTML = '';
+            
+            if (Object.keys(itemCounts).length === 0) {
+                desgloseContainer.innerHTML = `<span style="color:var(--text-muted); font-size:0.85rem;">No se registraron ventas de productos.</span>`;
+            } else {
+                const list = document.createElement('ul');
+                list.style.paddingLeft = '16px';
+                for (const [prodName, qty] of Object.entries(itemCounts)) {
+                    const li = document.createElement('li');
+                    li.innerHTML = `<strong>${qty}</strong> unidades de <strong>${prodName}</strong>`;
+                    list.appendChild(li);
+                }
+                desgloseContainer.appendChild(list);
+            }
+
+            document.getElementById('close-cash-modal').style.display = 'flex';
+        }
+
+        function confirmResetCaja() {
+            if (confirm("🚨 ATENCIÓN: Al confirmar el Cierre de Caja se archivarán los pedidos pagados y anulados del día, reiniciando la venta del sistema a $0.00. ¿Desea proceder?")) {
+                
+                addAuditLog(
+                    state.currentUser ? state.currentUser.rut : "SYSTEM", 
+                    "Administrador", 
+                    "EJECUTÓ CIERRE DE JORNADA Y REINICIO DE CAJA"
+                );
+
+                // Filtrar comandas vigentes (no terminadas) para que no se pierdan si se realiza un cierre
+                state.orders = state.orders.filter(o => o.status !== 'Pagado' && o.status !== 'Anulado');
+                saveStateToStorage();
+
+                document.getElementById('close-cash-modal').style.display = 'none';
+                showToast("Cierre de Caja ejecutado con éxito. Jornada reseteada.", "warning");
+                
+                renderCajaPanel();
+                renderWaiterOrders();
+                renderAuditLogs();
+            }
+        }
+
+        /* MANTENEDOR DEL MENÚ (CAMBIOS DE PRECIO E INVENTARIO EN CALIENTE) */
+        function renderMenuMaintainer() {
+            const container = document.getElementById('admin-menu-list');
+            container.innerHTML = '';
+
+            state.menu.forEach(p => {
+                const item = document.createElement('div');
+                item.className = 'menu-maintainer-item';
+                item.innerHTML = `
+                    <div style="flex: 1; min-width: 150px;">
+                        <strong>${p.name}</strong>
+                        <div style="font-size:0.8rem; color:var(--text-muted);">${p.category}</div>
+                    </div>
+                    
+                    <div style="display: flex; gap: 8px; align-items: center; min-width: 150px;">
+                        <label for="price-${p.id}" class="sr-only">Precio de ${p.name}</label>
+                        <span style="font-size: 0.9rem;">$</span>
+                        <input type="number" id="price-${p.id}" class="form-control" style="width: 90px; padding: 6px; display: inline-block;" step="0.01" value="${p.price.toFixed(2)}" onchange="updateProductPrice(${p.id}, this.value)">
+                    </div>
+
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span style="font-size: 0.9rem;">${p.available ? '🟢 Disponible' : '🔴 Agotado / Ocultar'}</span>
+                        <label class="switch">
+                            <input type="checkbox" ${p.available ? 'checked' : ''} onchange="toggleProductAvailability(${p.id}, this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        function updateProductPrice(productId, newPrice) {
+            const priceVal = parseFloat(newPrice);
+            if (isNaN(priceVal) || priceVal < 0) {
+                alert("Precio inválido");
+                renderMenuMaintainer();
+                return;
+            }
+
+            const pIndex = state.menu.findIndex(p => p.id === productId);
+            if (pIndex === -1) return;
+
+            const oldPrice = state.menu[pIndex].price;
+            state.menu[pIndex].price = priceVal;
+            saveStateToStorage();
+
+            addAuditLog(
+                state.currentUser ? state.currentUser.rut : "MOCK_ADMIN", 
+                "Administrador", 
+                `Actualizó precio de '${state.menu[pIndex].name}' de $${oldPrice.toFixed(2)} a $${priceVal.toFixed(2)}`
+            );
+
+            showToast(`Precio actualizado para ${state.menu[pIndex].name}`, "success");
+            renderWaiterMenu();
+        }
+
+        function toggleProductAvailability(productId, isAvailable) {
+            const pIndex = state.menu.findIndex(p => p.id === productId);
+            if (pIndex === -1) return;
+
+            state.menu[pIndex].available = isAvailable;
+            saveStateToStorage();
+
+            addAuditLog(
+                state.currentUser ? state.currentUser.rut : "MOCK_ADMIN", 
+                "Administrador", 
+                `${isAvailable ? 'Habilitó' : 'Ocultó / Deshabilitó por Agotado'} el producto '${state.menu[pIndex].name}'`
+            );
+
+            showToast(`${state.menu[pIndex].name} se encuentra ${isAvailable ? 'Disponible' : 'Agotado (Menú Bloqueado)'}`, "warning");
+            renderWaiterMenu();
+        }
+
+        /* AUDITORÍA Y SEGURIDAD (LOGS) */
+        function addAuditLog(rut, role, action) {
+            const logEntry = {
+                timestamp: new Date().toLocaleString(),
+                rut,
+                role,
+                action
+            };
+            state.logs.unshift(logEntry); // Insertar al inicio para visualización inmediata
+            
+            // Mantener un límite de hasta 500 logs para resiliencia de hardware de 2GB RAM
+            if (state.logs.length > 500) {
+                state.logs.pop();
+            }
+            saveStateToStorage();
+        }
+
+        function renderAuditLogs() {
+            const tbody = document.getElementById('audit-logs-table-body');
+            tbody.innerHTML = '';
+
+            if (state.logs.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--text-muted);">Sin logs registrados en esta sesión.</td></tr>`;
+                return;
+            }
+
+            state.logs.forEach(l => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td style="font-family:monospace; font-size:0.85rem; color:var(--text-muted);">${l.timestamp}</td>
+                    <td><strong>${l.rut}</strong></td>
+                    <td><span class="badge" style="background:#475569; color:#fff;">${l.role}</span></td>
+                    <td style="color:#f1f5f9; font-weight:500;">${l.action}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function clearAuditLogs() {
+            if (confirm("¿Seguro de vaciar el historial de auditoría técnica?")) {
+                state.logs = [];
+                saveStateToStorage();
+                renderAuditLogs();
+            }
+        }
+
+        /* ==========================================================================
+           COMPONENTE DE NOTIFICACIÓN FLOTANTE (TOAST)
+           ========================================================================== */
+        function showToast(message, type = 'info', duration = 4000) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            toast.setAttribute('role', 'alert');
+            toast.innerHTML = `
+                <div style="flex: 1; padding-right: 12px; font-weight: 500;">${message}</div>
+                <button onclick="this.parentElement.remove()" style="background:none; border:none; color:inherit; font-weight:bold; cursor:pointer;" aria-label="Cerrar notificación">X</button>
+            `;
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                if (toast.parentElement) {
+                    toast.remove();
+                }
+            }, duration);
+        }
+
+        /* ==========================================================================
+           SIMULACIÓN DE PRUEBA DE CARGA (50 PEDIDOS CONCURRENTES)
+           ========================================================================== */
+        function loadPerformanceMocks() {
+            // Generar 50 órdenes aleatorias con estados diversos para probar robustez en hardware de bajo costo (2GB RAM)
+            const mesas = ["Mesa 1", "Mesa 2", "Mesa 3", "Mesa 4", "Mesa 5", "Mesa 6", "Llevar"];
+            const estados = ["Pendiente", "En preparación", "Listo"];
+            const nombresComunes = ["Andrés", "Camila", "Felipe", "Marta", "Gonzalo"];
+            
+            for (let i = 0; i < 50; i++) {
+                const numItems = Math.floor(Math.random() * 3) + 1;
+                const parsedItems = [];
+                let subtotal = 0;
+
+                for (let j = 0; j < numItems; j++) {
+                    const prod = state.menu[Math.floor(Math.random() * state.menu.length)];
+                    const qty = Math.floor(Math.random() * 2) + 1;
+                    parsedItems.push({
+                        id: prod.id,
+                        name: prod.name,
+                        price: prod.price,
+                        qty: qty
+                    });
+                    subtotal += prod.price * qty;
+                }
+
+                // Distribución temporal simulada para cascada FIFO en cocina (hasta 2 horas atrás)
+                const mockTime = new Date(Date.now() - Math.floor(Math.random() * 7200000)).toISOString();
+
+                state.orders.push({
+                    id: 2000 + i,
+                    table: mesas[Math.floor(Math.random() * mesas.length)],
+                    items: parsedItems,
+                    status: estados[Math.floor(Math.random() * estados.length)],
+                    timestamp: mockTime,
+                    total: subtotal,
+                    createdBy: nombresComunes[Math.floor(Math.random() * nombresComunes.length)]
+                });
+            }
+
+            saveStateToStorage();
+            
+            addAuditLog(
+                "TESTER-112", 
+                "Prueba de Sistema", 
+                "Inyección exitosa de 50 pedidos concurrentes para validación de latencia."
+            );
+
+            showToast("🚀 Éxito: 50 Pedidos concurrentes inyectados en la memoria del navegador.", "success");
+            
+            // Re-renderizar todo
+            renderWaiterOrders();
+            renderKitchenOrders();
+            renderCajaPanel();
+            renderAuditLogs();
+        }
+
+        // Ejecutar Inicialización
+        window.onload = initSystem;
+    </script>
+</body>
+</html>
