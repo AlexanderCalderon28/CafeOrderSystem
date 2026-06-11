@@ -5,1914 +5,1259 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CafeOrder System - Prototipo de Alta Fidelidad</title>
     <style>
-        /* ==========================================================================
-           VARIABLES Y DISEÑO ADAPTATIVO (WCAG AA / MOBILE FIRST)
-           ========================================================================== */
+        /* Paleta de Colores Corporativa y Tipografía */
         :root {
-            /* Paleta de alto contraste para entornos de alta iluminación (Ratio > 4.5:1) */
-            --bg-main: #0b0f19;
-            --bg-panel: #151f32;
-            --bg-card: #1e293b;
-            --border-color: #334155;
-            --text-main: #f8fafc;
-            --text-muted: #cbd5e1;
+            --bg-main: #FCF9F6;
+            --sidebar-bg: #2B1A11;
+            --sidebar-text: #A3968E;
+            --sidebar-text-active: #2B1A11;
+            --sidebar-active-bg: #E5E7D6;
+            --text-dark: #2B1A11;
+            --card-bg: #FFFFFF;
+            --border-color: #E6E1DA;
             
-            --primary: #3b82f6;
-            --primary-hover: #2563eb;
-            --success: #10b981;
-            --success-hover: #059669;
-            --warning: #f59e0b;
-            --danger: #ef4444;
-            --danger-hover: #dc2626;
-
-            --font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            /* Estados Kanban */
+            --col-new-bg: #E4F0F6;
+            --col-new-text: #2A5B7A;
+            --col-prep-bg: #FDF3E7;
+            --col-prep-text: #A75D24;
+            --col-ready-bg: #EBF3E6;
+            --col-ready-text: #4E7C3A;
+            
+            /* Alertas y Botones Especiales */
+            --alert-bg: #FDF2F2;
+            --alert-border: #F8B4B4;
+            --alert-text: #C81E1E;
+            --btn-red: #A92323;
+            --btn-coral: #FFE3E1;
+            --btn-coral-text: #8A1F1F;
         }
 
-        /* Reseteo y Accesibilidad de Teclado */
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-        }
-
-        *:focus-visible {
-            outline: 3px solid var(--warning);
-            outline-offset: 2px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
 
         body {
-            font-family: var(--font-family);
             background-color: var(--bg-main);
-            color: var(--text-main);
-            line-height: 1.5;
-            padding-bottom: 60px; /* Espacio para barra flotante de desarrollo */
-        }
-
-        .sr-only {
-            position: absolute;
-            width: 1px;
-            height: 1px;
-            padding: 0;
-            margin: -1px;
+            color: var(--text-dark);
+            height: 100vh;
             overflow: hidden;
-            clip: rect(0, 0, 0, 0);
-            border: 0;
         }
 
-        /* Skip Link para Lectores de Pantalla */
-        .skip-link {
-            position: absolute;
-            top: -40px;
-            left: 0;
-            background: var(--warning);
-            color: #000;
-            padding: 8px;
-            z-index: 100;
-            transition: top 0.2s;
-        }
-        .skip-link:focus {
-            top: 0;
+        /* --- VISTA DE LOGIN --- */
+        #login-view {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: var(--bg-main);
         }
 
-        /* Contenedor Principal */
-        .container {
+        .login-card {
+            background: var(--card-bg);
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
             width: 100%;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 16px;
-        }
-
-        /* ==========================================================================
-           CABECERA EVALUADORA Y DE SESIÓN
-           ========================================================================== */
-        header {
-            background-color: var(--bg-panel);
-            border-bottom: 2px solid var(--border-color);
-            padding: 12px 16px;
-            margin-bottom: 20px;
-        }
-
-        .header-top {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: space-between;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .system-title {
-            font-size: 1.5rem;
-            font-weight: 800;
-            color: var(--primary);
-            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .session-info {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            flex-wrap: wrap;
-            font-size: 0.875rem;
-            background: var(--bg-card);
-            padding: 6px 12px;
-            border-radius: 6px;
+            max-width: 420px;
+            text-align: center;
             border: 1px solid var(--border-color);
         }
 
-        /* Barra de Simulación del Evaluador (Profesor/Testeo) */
-        .evaluator-bar {
-            background-color: #2e1065; /* Violeta oscuro para diferenciarlo de producción */
-            color: var(--text-main);
-            padding: 10px;
-            font-size: 0.85rem;
-            border-bottom: 2px solid var(--warning);
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-        @media (min-width: 768px) {
-            .evaluator-bar {
-                flex-direction: row;
-                justify-content: space-between;
-                align-items: center;
-            }
-        }
-        .evaluator-controls {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-        .btn-evaluator {
-            background-color: #4c1d95;
-            color: white;
-            border: 1px solid #7c3aed;
-            padding: 6px 12px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: background 0.2s;
-        }
-        .btn-evaluator:hover {
-            background-color: #6d28d9;
-        }
-        .btn-evaluator.active {
-            border-color: var(--warning);
-            background-color: var(--warning);
-            color: #000;
-        }
-
-        /* ==========================================================================
-           BOTONES Y COMPONENTES REUTILIZABLES
-           ========================================================================== */
-        .btn {
+        .login-logo {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
-            padding: 10px 16px;
-            font-size: 1rem;
-            font-weight: 600;
-            border-radius: 6px;
-            border: none;
-            cursor: pointer;
-            transition: background-color 0.2s, transform 0.1s;
-            width: 100%;
-        }
-        @media (min-width: 768px) {
-            .btn {
-                width: auto;
-            }
-        }
-        .btn-primary { background-color: var(--primary); color: white; }
-        .btn-primary:hover { background-color: var(--primary-hover); }
-        .btn-success { background-color: var(--success); color: white; }
-        .btn-success:hover { background-color: var(--success-hover); }
-        .btn-danger { background-color: var(--danger); color: white; }
-        .btn-danger:hover { background-color: var(--danger-hover); }
-        .btn-warning { background-color: var(--warning); color: #000; }
-
-        .form-group {
             margin-bottom: 16px;
         }
-        .form-group label {
-            display: block;
-            margin-bottom: 6px;
-            font-size: 0.9rem;
-            font-weight: 600;
-        }
-        .form-control {
-            width: 100%;
-            padding: 12px;
-            font-size: 1rem;
-            background-color: var(--bg-card);
-            border: 2px solid var(--border-color);
-            color: var(--text-main);
-            border-radius: 6px;
-        }
-        .form-control:focus {
-            border-color: var(--primary);
-            outline: none;
-        }
 
-        .badge {
-            display: inline-block;
-            padding: 4px 8px;
-            border-radius: 9999px;
-            font-size: 0.75rem;
+        .login-card h1 {
+            font-size: 32px;
             font-weight: 700;
-            text-transform: uppercase;
-        }
-        .badge-pendiente { background-color: var(--warning); color: #000; }
-        .badge-preparacion { background-color: var(--primary); color: #fff; }
-        .badge-listo { background-color: var(--success); color: #fff; }
-        .badge-pagado { background-color: #64748b; color: #fff; }
-
-        /* ==========================================================================
-           VISTA 1: INICIO DE SESIÓN
-           ========================================================================== */
-        .login-card {
-            background-color: var(--bg-panel);
-            border: 2px solid var(--border-color);
-            border-radius: 12px;
-            max-width: 450px;
-            margin: 40px auto;
-            padding: 24px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-        }
-        .login-card h2 {
-            margin-bottom: 20px;
-            text-align: center;
-        }
-        .login-error {
-            background-color: rgba(239, 68, 68, 0.2);
-            border: 1px solid var(--danger);
-            color: #fca5a5;
-            padding: 10px;
-            border-radius: 6px;
-            margin-bottom: 16px;
-            font-weight: bold;
-            display: none;
-            text-align: center;
-        }
-        .quick-credentials {
-            margin-top: 20px;
-            background: var(--bg-card);
-            border: 1px dashed var(--border-color);
-            padding: 12px;
-            border-radius: 6px;
-            font-size: 0.85rem;
-        }
-        .quick-credentials table {
-            width: 100%;
-            margin-top: 8px;
-            border-collapse: collapse;
-        }
-        .quick-credentials td {
-            padding: 4px 0;
-        }
-
-        /* ==========================================================================
-           VISTA 2: GARZÓN (GESTOR DE PEDIDOS)
-           ========================================================================== */
-        .waiter-layout {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 20px;
-        }
-        @media (min-width: 992px) {
-            .waiter-layout {
-                grid-template-columns: 2fr 1.2fr;
-            }
-        }
-
-        .category-tabs {
-            display: flex;
-            gap: 8px;
-            overflow-x: auto;
-            padding-bottom: 10px;
-            margin-bottom: 16px;
-        }
-        .category-tab {
-            background-color: var(--bg-panel);
-            color: var(--text-main);
-            border: 1px solid var(--border-color);
-            padding: 10px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            white-space: nowrap;
-            font-weight: 600;
-        }
-        .category-tab.active {
-            background-color: var(--primary);
-            border-color: var(--primary);
-        }
-
-        .products-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-            gap: 12px;
-        }
-        .product-card {
-            background-color: var(--bg-panel);
-            border: 2px solid var(--border-color);
-            border-radius: 8px;
-            padding: 16px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            min-height: 140px;
-        }
-        .product-card.sold-out {
-            opacity: 0.4;
-            pointer-events: none;
-            border-style: dashed;
-        }
-        .product-name {
-            font-weight: bold;
-            font-size: 1.1rem;
+            color: var(--text-dark);
             margin-bottom: 4px;
         }
-        .product-price {
-            color: var(--warning);
-            font-size: 1.25rem;
-            font-weight: 800;
+
+        .login-card p.subtitle {
+            color: #7A6E67;
+            font-size: 14px;
+            margin-bottom: 28px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
-        /* Sidebar Comanda */
-        .cart-card {
-            background-color: var(--bg-panel);
-            border: 2px solid var(--border-color);
-            border-radius: 12px;
-            padding: 20px;
-            align-self: start;
+        .form-group {
+            text-align: left;
+            margin-bottom: 20px;
         }
-        .cart-items {
-            margin: 16px 0;
-            max-height: 250px;
-            overflow-y: auto;
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: var(--text-dark);
         }
-        .cart-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 8px 0;
-            border-bottom: 1px solid var(--border-color);
-        }
-        .cart-controls {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .btn-qty {
-            width: 32px;
-            height: 32px;
-            background: var(--bg-card);
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
             border: 1px solid var(--border-color);
-            color: white;
-            border-radius: 4px;
+            border-radius: 6px;
+            font-size: 15px;
+            background-color: #FCFBF9;
+            color: var(--text-dark);
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--text-dark);
+        }
+
+        .btn-login {
+            width: 100%;
+            background-color: var(--sidebar-bg);
+            color: #FFFFFF;
+            padding: 14px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
             cursor: pointer;
-            font-weight: bold;
+            margin-top: 10px;
+            transition: background 0.2s;
         }
 
-        /* Historial de Comandas del Garzón */
-        .waiter-orders {
+        .btn-login:hover {
+            background-color: #42281A;
+        }
+
+        .login-helper {
             margin-top: 24px;
-            background: var(--bg-panel);
-            border-radius: 12px;
-            border: 2px solid var(--border-color);
-            padding: 16px;
+            font-size: 12px;
+            color: #8C827A;
+            line-height: 1.6;
+            background: #F5F1EC;
+            padding: 12px;
+            border-radius: 6px;
         }
 
-        /* ==========================================================================
-           VISTA 3: BARISTA (PANTALLA KANBAN KITCHEN)
-           ========================================================================== */
-        .kitchen-header {
+        .login-error-msg {
+            color: var(--alert-text);
+            background-color: var(--alert-bg);
+            border: 1px solid var(--alert-border);
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 13px;
+            margin-bottom: 16px;
+            display: none;
+        }
+
+        /* --- CONTENEDOR PRINCIPAL SPA --- */
+        #app-layout {
+            display: none; /* Se activa tras login */
+            height: 100vh;
+            grid-template-columns: 260px 1fr;
+        }
+
+        /* --- SIDEBAR IZQUIERDO --- */
+        aside {
+            background-color: var(--sidebar-bg);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 24px 16px;
+            color: #FFFFFF;
+        }
+
+        .brand-section {
+            margin-bottom: 32px;
+            padding-left: 8px;
+        }
+
+        .brand-title {
+            font-size: 24px;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
+        .brand-status {
+            font-size: 12px;
+            color: #A3968E;
+            margin-top: 4px;
+        }
+
+        .nav-menu {
+            list-style: none;
+            flex-grow: 1;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 14px;
+            color: var(--sidebar-text);
+            border-radius: 8px;
+            cursor: pointer;
+            margin-bottom: 8px;
+            font-weight: 500;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .nav-item svg {
+            margin-right: 12px;
+            fill: currentColor;
+        }
+
+        .nav-item:hover {
+            color: #FFFFFF;
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .nav-item.active {
+            background-color: var(--sidebar-active-bg);
+            color: var(--sidebar-text-active);
+            font-weight: 600;
+        }
+
+        .sidebar-footer {
+            border-top: 1px solid #42281A;
+            padding-top: 16px;
+        }
+
+        .btn-close-shift {
+            width: 100%;
+            background-color: var(--btn-coral);
+            color: var(--btn-coral-text);
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            margin-top: 16px;
+            text-align: center;
+        }
+
+        /* --- CONTENEDOR DE CONTENIDO DERECHO --- */
+        main {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Top Header Navbar */
+        header {
+            height: 60px;
+            background-color: #FFFFFF;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding: 0 32px;
+            gap: 24px;
+        }
+
+        .top-status {
+            font-size: 13px;
+            color: #7A6E67;
+        }
+
+        .top-user-role {
+            font-size: 14px;
+            font-weight: 600;
+            border-left: 1px solid var(--border-color);
+            padding-left: 16px;
+        }
+
+        .icon-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--text-dark);
+            display: flex;
+            align-items: center;
+        }
+
+        /* Contenedor de Vistas Dinámicas */
+        .view-content {
+            flex-grow: 1;
+            padding: 24px 32px;
+            overflow-y: auto;
+            background-color: var(--bg-main);
+        }
+
+        .view-section {
+            display: none; /* Controlado por JS */
+            height: 100%;
+        }
+
+        .view-section.active {
+            display: block;
+        }
+
+        /* --- KITCHEN VIEW (KANBAN BOARD) --- */
+        .kanban-board {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+            height: calc(100vh - 140px);
+        }
+
+        .kanban-column {
+            background-color: transparent;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .column-header {
+            padding: 14px 20px;
+            border-radius: 8px 8px 0 0;
+            font-weight: 600;
+            font-size: 16px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 16px;
-            flex-wrap: wrap;
-            gap: 12px;
         }
-        .kitchen-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 16px;
-        }
-        /* Resaltado visual intenso para pedidos FIFO (Nuevos / Pendientes) */
-        .kitchen-card {
-            background-color: var(--bg-panel);
-            border: 2px solid var(--border-color);
+
+        .column-header.new { background-color: var(--col-new-bg); color: var(--col-new-text); }
+        .column-header.prep { background-color: var(--col-prep-bg); color: var(--col-prep-text); }
+        .column-header.ready { background-color: var(--col-ready-bg); color: var(--col-ready-text); }
+
+        .column-count {
+            background-color: var(--text-dark);
+            color: #FFFFFF;
+            font-size: 12px;
+            padding: 2px 8px;
             border-radius: 12px;
-            padding: 16px;
-            position: relative;
-            transition: transform 0.2s;
         }
-        .kitchen-card.status-pendiente {
-            border: 3px solid var(--warning);
-            box-shadow: 0 0 15px rgba(245, 158, 11, 0.3);
-            animation: pulse-border 2s infinite;
-        }
-        .kitchen-card.status-preparacion {
-            border: 3px solid var(--primary);
-        }
-        @keyframes pulse-border {
-            0% { box-shadow: 0 0 5px rgba(245, 158, 11, 0.2); }
-            50% { box-shadow: 0 0 15px rgba(245, 158, 11, 0.5); }
-            100% { box-shadow: 0 0 5px rgba(245, 158, 11, 0.2); }
-        }
-        .kitchen-timer {
-            font-size: 0.85rem;
-            color: var(--text-muted);
+
+        .column-cards-container {
+            flex-grow: 1;
+            overflow-y: auto;
             display: flex;
+            flex-direction: column;
+            gap: 16px;
+            padding-right: 4px;
+        }
+
+        /* Tarjetas de Pedidos */
+        .order-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+            position: relative;
+        }
+
+        .order-card.alert-priority {
+            background-color: var(--alert-bg);
+            border: 1px solid var(--alert-border);
+        }
+
+        .card-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+
+        .card-id {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+
+        .card-timer {
+            display: inline-flex;
             align-items: center;
             gap: 4px;
-            margin-top: 8px;
-        }
-
-        /* ==========================================================================
-           VISTA 4: ADMINISTRADOR Y CAJA
-           ========================================================================== */
-        .admin-tabs {
-            display: flex;
-            border-bottom: 2px solid var(--border-color);
-            margin-bottom: 20px;
-        }
-        .admin-tab-btn {
-            background: none;
-            color: var(--text-muted);
-            border: none;
-            padding: 12px 16px;
-            font-size: 1rem;
-            cursor: pointer;
+            font-size: 13px;
             font-weight: 600;
-        }
-        .admin-tab-btn.active {
-            color: var(--primary);
-            border-bottom: 3px solid var(--primary);
-        }
-
-        .dashboard-stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 16px;
-            margin-bottom: 24px;
-        }
-        .stat-card {
-            background-color: var(--bg-panel);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 16px;
-            text-align: center;
-        }
-        .stat-val {
-            font-size: 1.8rem;
-            font-weight: 800;
-            color: var(--success);
+            background: #F0EDE8;
+            padding: 4px 8px;
+            border-radius: 4px;
         }
 
-        /* Tabla de Auditoría */
-        .audit-table-wrapper {
-            overflow-x: auto;
-            background-color: var(--bg-panel);
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
+        .order-card.alert-priority .card-timer {
+            background: #FCE8E6;
+            color: var(--alert-text);
         }
-        .audit-table {
+
+        .card-table {
+            font-size: 13px;
+            font-weight: 600;
+            color: #554A42;
+            margin-bottom: 12px;
+        }
+
+        .card-items-list {
+            list-style: none;
+            margin-bottom: 16px;
+        }
+
+        .card-items-list li {
+            font-size: 14px;
+            margin-bottom: 6px;
+            color: #4A3E36;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Checkboxes interactivos de preparación */
+        .card-items-list input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            accent-color: var(--sidebar-bg);
+            cursor: pointer;
+        }
+
+        .card-items-list li.checked-item {
+            text-decoration: line-through;
+            color: #A3968E;
+        }
+
+        .card-action-btn {
             width: 100%;
-            border-collapse: collapse;
-            text-align: left;
-            font-size: 0.9rem;
-        }
-        .audit-table th, .audit-table td {
-            padding: 12px;
-            border-bottom: 1px solid var(--border-color);
-        }
-        .audit-table th {
-            background-color: var(--bg-card);
-            font-weight: bold;
+            background-color: var(--sidebar-bg);
+            color: #FFFFFF;
+            border: none;
+            padding: 10px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.2s;
         }
 
-        /* Mantenedor de Precios e Inventario */
-        .menu-maintainer-list {
+        .card-action-btn.secondary {
+            background-color: var(--sidebar-active-bg);
+            color: var(--sidebar-text-active);
+        }
+
+        .card-action-btn:hover {
+            opacity: 0.9;
+        }
+
+        .status-badge-text {
+            font-size: 14px;
+            font-style: italic;
+            color: #7A6E67;
+            margin-bottom: 16px;
+        }
+
+        /* --- ADMIN DASHBOARD VIEW --- */
+        .placeholder-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #7A6E67;
+            font-size: 16px;
+            border: 2px dashed var(--border-color);
+            border-radius: 12px;
+            background: #FFFFFF;
+        }
+
+        /* --- CASHIER PAYMENTS VIEW --- */
+        .cashier-layout {
+            display: grid;
+            grid-template-columns: 400px 1fr;
+            gap: 24px;
+            height: calc(100vh - 200px);
+        }
+
+        .cashier-pane {
+            background-color: transparent;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .cashier-pane-white {
+            background-color: #FFFFFF;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .pane-title {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+
+        .search-box-container {
+            position: relative;
+            margin-bottom: 16px;
+        }
+
+        .search-box-container input {
+            width: 100%;
+            padding: 10px 12px 10px 36px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 14px;
+            background-color: #FDFBF9;
+        }
+
+        .search-icon-svg {
+            position: absolute;
+            left: 10px;
+            top: 11px;
+            color: #92857C;
+        }
+
+        .unpaid-list {
+            flex-grow: 1;
+            overflow-y: auto;
             display: flex;
             flex-direction: column;
             gap: 12px;
         }
-        .menu-maintainer-item {
-            background-color: var(--bg-panel);
+
+        .unpaid-card {
+            background: #FFFFFF;
             border: 1px solid var(--border-color);
             border-radius: 8px;
-            padding: 12px 16px;
+            padding: 16px;
+            cursor: pointer;
             display: flex;
-            flex-wrap: wrap;
             justify-content: space-between;
             align-items: center;
-            gap: 12px;
+            transition: all 0.2s;
         }
 
-        /* ==========================================================================
-           MODAL DE CIERRE DE CAJA Y POPUPS DE NOTIFICACIÓN
-           ========================================================================== */
-        .toast-container {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 1000;
+        .unpaid-card:hover, .unpaid-card.selected {
+            border-color: var(--sidebar-bg);
+            background-color: #FAF6F2;
+        }
+
+        .unpaid-card-tag {
+            background-color: var(--sidebar-active-bg);
+            color: var(--sidebar-text-active);
+            font-size: 11px;
+            font-weight: 600;
+            padding: 2px 6px;
+            border-radius: 4px;
+            display: inline-block;
+            margin-bottom: 6px;
+        }
+
+        .unpaid-card-id {
+            font-size: 12px;
+            color: #7A6E67;
+            margin-left: 6px;
+        }
+
+        .unpaid-card-items {
+            font-size: 14px;
+            color: var(--text-dark);
+        }
+
+        .unpaid-card-price {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+
+        /* Detalle de Pago Derecho */
+        .payment-empty-state {
             display: flex;
             flex-direction: column;
-            gap: 10px;
-            max-width: 400px;
-            width: calc(100% - 40px);
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #7A6E67;
+            text-align: center;
+            gap: 16px;
         }
-        .toast {
-            background-color: var(--bg-panel);
-            border-left: 5px solid var(--primary);
-            padding: 16px;
-            border-radius: 6px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-            color: var(--text-main);
-            animation: slideIn 0.3s forwards;
+
+        .payment-details-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 100%;
+        }
+
+        .bill-header {
+            border-bottom: 1px dashed var(--border-color);
+            padding-bottom: 16px;
+            margin-bottom: 16px;
+        }
+
+        .bill-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 15px;
+            margin-bottom: 10px;
+        }
+
+        .bill-total-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 24px;
+            font-weight: 700;
+            border-top: 1px solid var(--text-dark);
+            padding-top: 16px;
+            margin-top: 16px;
+        }
+
+        /* Barra de Resumen de Caja Inferior */
+        .cashier-footer-bar {
+            margin-top: 24px;
+            background-color: #E6E1DA;
+            border-radius: 8px;
+            padding: 16px 24px;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
-        .toast.toast-success { border-left-color: var(--success); }
-        .toast.toast-danger { border-left-color: var(--danger); }
-        .toast.toast-warning { border-left-color: var(--warning); }
-        @keyframes slideIn {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
+
+        .footer-accumulated-label {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #554A42;
         }
 
+        .footer-accumulated-value {
+            font-size: 32px;
+            font-weight: 700;
+        }
+
+        .footer-accumulated-value span {
+            font-size: 14px;
+            font-weight: 500;
+            color: #554A42;
+            margin-left: 8px;
+        }
+
+        .btn-cierre-caja {
+            background-color: var(--btn-red);
+            color: #FFFFFF;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* --- MODAL CIERRE DE CAJA --- */
         .modal-overlay {
             position: fixed;
             top: 0;
             left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.85);
-            z-index: 999;
-            display: flex;
-            justify-content: center;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.4);
+            display: none;
             align-items: center;
-            padding: 16px;
+            justify-content: center;
+            z-index: 1000;
         }
-        .modal {
-            background: var(--bg-panel);
-            border: 2px solid var(--border-color);
+
+        .modal-card {
+            background: #FFFFFF;
             border-radius: 12px;
-            max-width: 500px;
+            padding: 32px;
             width: 100%;
-            padding: 24px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            max-width: 480px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.15);
         }
-        .modal h3 {
+
+        .modal-card h2 {
+            font-size: 22px;
             margin-bottom: 16px;
-            color: var(--warning);
         }
 
-        /* Toggle Switch */
-        .switch {
-            position: relative;
-            display: inline-block;
-            width: 50px;
-            height: 24px;
+        .modal-actions {
+            margin-top: 24px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
         }
-        .switch input { opacity: 0; width: 0; height: 0; }
-        .slider {
-            position: absolute;
+
+        .modal-btn {
+            padding: 10px 18px;
+            border-radius: 6px;
+            font-weight: 600;
             cursor: pointer;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background-color: #cbd5e1;
-            transition: .4s;
-            border-radius: 34px;
+            border: none;
         }
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 16px; width: 16px;
-            left: 4px; bottom: 4px;
-            background-color: white;
-            transition: .4s;
-            border-radius: 50%;
-        }
-        input:checked + .slider { background-color: var(--success); }
-        input:checked + .slider:before { transform: translateX(26px); }
 
-        /* Estilo responsivo adicional para tablas */
-        .responsive-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-        }
-        .responsive-table th, .responsive-table td {
-            padding: 10px;
-            border-bottom: 1px solid var(--border-color);
-            text-align: left;
-        }
-        .responsive-table th { background: var(--bg-card); }
+        .modal-btn.primary { background-color: var(--sidebar-bg); color: #FFFFFF; }
+        .modal-btn.secondary { background-color: #E6E1DA; color: var(--text-dark); }
     </style>
 </head>
 <body>
 
-    <a href="#main-content" class="skip-link">Saltar al contenido principal</a>
-
-    <!-- BARRA DE CONTROL DEL EVALUADOR (PROFESOR / TESTEO GLOBAL) -->
-    <div class="evaluator-bar" aria-label="Controles de simulación de pruebas">
-        <div>
-            <strong>Simulador de Evaluación:</strong> Permite probar las interfaces sin perder la persistencia de datos local.
-        </div>
-        <div class="evaluator-controls">
-            <button class="btn-evaluator" onclick="switchGlobalView('login')" id="eval-login">1. Login</button>
-            <button class="btn-evaluator" onclick="switchGlobalView('waiter')" id="eval-waiter">2. Garzón</button>
-            <button class="btn-evaluator" onclick="switchGlobalView('kitchen')" id="eval-kitchen">3. Barista (Cocina)</button>
-            <button class="btn-evaluator" onclick="switchGlobalView('admin')" id="eval-admin">4. Admin & Caja</button>
-            <button class="btn-evaluator" onclick="loadPerformanceMocks()" style="background-color: #047857; border-color: #059669;">⚡ Inyectar 50 Pedidos (Prueba de Carga)</button>
-        </div>
-    </div>
-
-    <!-- CABECERA GENERAL -->
-    <header>
-        <div class="header-top">
-            <div class="system-title">
-                ☕ CafeOrder System
-                <span style="font-size: 0.8rem; background-color: #ef4444; color: white; padding: 2px 8px; border-radius: 4px; font-weight: bold; letter-spacing: 1px;">MODO LOCAL</span>
+    <!-- ================= VISTA DE LOGIN ================= -->
+    <section id="login-view">
+        <div class="login-card">
+            <div class="login-logo">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#2B1A11" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17 8h1a4 4 0 1 1 0 8h-1"></path>
+                    <path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"></path>
+                    <line x1="6" y1="2" x2="6" y2="4"></line>
+                    <line x1="10" y1="2" x2="10" y2="4"></line>
+                    <line x1="14" y1="2" x2="14" y2="4"></line>
+                </svg>
             </div>
-            <div class="session-info" id="session-display">
-                <!-- Se inyecta dinámicamente -->
-                <span>Sin sesión activa</span>
+            <h1>CafeOrder</h1>
+            <p class="subtitle">System Access</p>
+            
+            <div class="login-error-msg" id="login-error">Datos incorrectos, intente nuevamente</div>
+
+            <div class="form-group">
+                <label>Email</label>
+                <input type="text" id="login-email" value="admin@cafe.cl">
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="login-password" value="admin123">
+            </div>
+            
+            <button class="btn-login" onclick="handleLogin()">Login</button>
+
+            <div class="login-helper">
+                <strong>Credenciales de Demostración:</strong><br>
+                Admin: admin@cafe.cl / admin123<br>
+                Barista: cocina@cafe.cl / cocina123
             </div>
         </div>
-    </header>
+    </section>
 
-    <main class="container" id="main-content">
+    <!-- ================= ARQUITECTURA PRINCIPAL SPA ================= -->
+    <div id="app-layout">
         
-        <!-- VISTA 1: INICIO DE SESIÓN -->
-        <section id="view-login" style="display: none;">
-            <div class="login-card">
-                <h2>Control de Acceso</h2>
-                <div class="login-error" id="login-error-msg" role="alert" aria-live="polite"></div>
+        <!-- SIDEBAR NAV IZQUIERDO -->
+        <aside>
+            <div>
+                <div class="brand-section">
+                    <div class="brand-title">CafeOrder<br>System</div>
+                    <div class="brand-status">System Online</div>
+                </div>
+
+                <ul class="nav-menu">
+                    <li class="nav-item active" id="nav-kitchen" onclick="switchView('kitchen')">
+                        <svg width="18" height="18" viewBox="0 0 24 24"><path d="M8.1 21.8c-1.2 0-2.3-.5-3.1-1.3-.9-.9-1.3-2-1.3-3.2 0-2.2 1.6-4.1 3.8-4.4V3.5c0-.8.7-1.5 1.5-1.5s1.5.7 1.5 1.5v9.4c2.2.3 3.8 2.2 3.8 4.4 0 1.2-.5 2.3-1.3 3.2-.8.8-1.9 1.3-3.1 1.3zm.4-6.3h-.8c-1.1 0-2 .9-2 2s.9 2 2 2h.8c1.1 0 2-.9 2-2s-.9-2-2-2zM17.5 22c-.8 0-1.5-.7-1.5-1.5V3.5c0-.8.7-1.5 1.5-1.5s1.5.7 1.5 1.5v17c0 .8-.7 1.5-1.5 1.5z"/></svg>
+                        Kitchen View
+                    </li>
+                    <li class="nav-item" id="nav-admin" onclick="switchView('admin')">
+                        <svg width="18" height="18" viewBox="0 0 24 24"><path d="M4 11h6a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1zm10 0h6a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1h6a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1zM4 21h6a1 1 0 0 0 1-1v-6a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1zm10 0h6a1 1 0 0 0 1-1v-6a1 1 0 0 0-1-1h-6a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1z"/></svg>
+                        Admin Dashboard
+                    </li>
+                    <li class="nav-item" id="nav-cashier" onclick="switchView('cashier')">
+                        <svg width="18" height="18" viewBox="0 0 24 24"><path d="M21 7H3a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h18a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2zm-1 12H4v-2h16v2zm0-4H4V11h16v4zm1-10H3V3h18v2z"/></svg>
+                        Cashier Payments
+                    </li>
+                </ul>
+            </div>
+
+            <div class="sidebar-footer">
+                <div class="nav-item" style="margin-bottom:4px; opacity:0.7; cursor:default;">
+                    <svg width="16" height="16" viewBox="0 0 24 24"><path d="M19.4 13c0-.3.1-.6.1-.9s0-.6-.1-.9l2.1-1.7c.2-.2.2-.4.1-.6l-2-3.5c-.1-.2-.4-.3-.6-.2l-2.5 1c-.5-.4-1.1-.7-1.8-.9l-.4-2.6c0-.2-.2-.4-.4-.4h-4c-.2 0-.4.2-.4.4l-.4 2.6c-.7.2-1.3.5-1.8.9l-2.5-1c-.2-.1-.5 0-.6.2l-2 3.5c-.1.2-.1.4.1.6l2.1 1.7c0 .3-.1.6-.1.9s0 .6.1.9l-2.1 1.7c-.2.2-.2.4-.1.6l2 3.5c.1.2.4.3.6.2l2.5-1c.5.4 1.1.7 1.8.9l.4 2.6c0 .2.2.4.4.4h4c.2 0 .4-.2.4-.4l.4-2.6c.7-.2 1.3-.5 1.8-.9l2.5 1c.2.1.5 0 .6-.2l2-3.5c.1-.2.1-.4-.1-.6l-2.1-1.7zm-7.4 2.5c-1.9 0-3.5-1.6-3.5-3.5s1.6-3.5 3.5-3.5 3.5 1.6 3.5 3.5-1.6 3.5-3.5 3.5z"/></svg>
+                    Settings
+                </div>
+                <div class="nav-item" style="margin-bottom:0; opacity:0.7; cursor:default;">
+                    <svg width="16" height="16" viewBox="0 0 24 24"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm1 16h-2v-2h2v2zm1.1-6.4c-.4.4-.7.8-.8 1.4h-1.7c0-1 .4-1.8 1-2.4l1.1-1.1c.3-.3.5-.7.5-1.1 0-.8-.7-1.5-1.5-1.5s-1.5.7-1.5 1.5H7.5C7.5 6.5 9.5 4.5 12 4.5s4.5 2 4.5 4.5c0 1-.4 1.8-1.4 2.6z"/></svg>
+                    Support
+                </div>
+                <button class="btn-close-shift" onclick="logout()">Close Shift</button>
+            </div>
+        </aside>
+
+        <!-- AREA DE CONTENIDO PRINCIPAL -->
+        <main>
+            <!-- TOP NAVBAR PERMANENTE -->
+            <header>
+                <div class="top-status">System Online</div>
+                <div class="top-user-role" id="top-role-display">Admin</div>
+                <button class="icon-btn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                </button>
+                <button class="icon-btn">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                </button>
+            </header>
+
+            <!-- VISTAS DINÁMICAS (SPA) -->
+            <div class="view-content">
                 
-                <form id="login-form" onsubmit="handleLogin(event)">
-                    <div class="form-group">
-                        <label for="login-rut">RUT del Usuario (Formato 12.345.678-9)</label>
-                        <input type="text" id="login-rut" class="form-control" placeholder="12.345.678-9" required autocomplete="username">
-                    </div>
-                    <div class="form-group">
-                        <label for="login-pass">Contraseña</label>
-                        <input type="password" id="login-pass" class="form-control" required autocomplete="current-password">
-                    </div>
-                    <button type="submit" class="btn btn-primary" style="width: 100%;">Ingresar al Sistema</button>
-                </form>
+                <!-- 1. KITCHEN KANBAN VIEW -->
+                <div id="view-kitchen" class="view-section active">
+                    <div class="kanban-board">
+                        
+                        <!-- NUEVOS PEDIDOS -->
+                        <div class="kanban-column">
+                            <div class="column-header new">
+                                <span>Nuevos Pedidos</span>
+                                <span class="column-count" id="count-new">0</span>
+                            </div>
+                            <div class="column-cards-container" id="col-new-cards">
+                                <!-- Render dinámico -->
+                            </div>
+                        </div>
 
-                <div class="quick-credentials">
-                    <strong>Credenciales de Prueba (RUT válido):</strong>
-                    <table>
-                        <tr>
-                            <td><strong>Garzón:</strong></td>
-                            <td>RUT: <code>11.111.111-1</code></td>
-                            <td>Clave: <code>garzon123</code></td>
-                        </tr>
-                        <tr>
-                            <td><strong>Cocina:</strong></td>
-                            <td>RUT: <code>22.222.222-2</code></td>
-                            <td>Clave: <code>cocina123</code></td>
-                        </tr>
-                        <tr>
-                            <td><strong>Admin:</strong></td>
-                            <td>RUT: <code>33.333.333-3</code></td>
-                            <td>Clave: <code>admin123</code></td>
-                        </tr>
-                    </table>
-                </div>
-            </div>
-        </section>
+                        <!-- EN PREPARACION -->
+                        <div class="kanban-column">
+                            <div class="column-header prep">
+                                <span>En Preparación</span>
+                                <span class="column-count" id="count-prep">0</span>
+                            </div>
+                            <div class="column-cards-container" id="col-prep-cards">
+                                <!-- Render dinámico -->
+                            </div>
+                        </div>
 
-        <!-- VISTA 2: INTERFAZ DEL GARZÓN -->
-        <section id="view-waiter" style="display: none;">
-            <h2 style="margin-bottom: 16px;">Gestión de Pedidos en Salón</h2>
-            
-            <div class="waiter-layout">
-                <!-- Sección Izquierda: Catálogo -->
-                <div>
-                    <div class="category-tabs" id="category-tabs" role="tablist" aria-label="Categorías de menú">
-                        <!-- Generado dinámicamente -->
-                    </div>
-                    
-                    <div class="products-grid" id="products-grid">
-                        <!-- Productos generados dinámicamente -->
+                        <!-- LISTOS -->
+                        <div class="kanban-column">
+                            <div class="column-header ready">
+                                <span>Listos</span>
+                                <span class="column-count" id="count-ready">0</span>
+                            </div>
+                            <div class="column-cards-container" id="col-ready-cards">
+                                <!-- Render dinámico -->
+                            </div>
+                        </div>
+
                     </div>
                 </div>
 
-                <!-- Sección Derecha: Comanda Actual -->
-                <div class="cart-card">
-                    <h3 id="comanda-title">Nueva Comanda</h3>
-                    <div class="form-group" style="margin-top: 12px;">
-                        <label for="table-select">Asignar Mesa *</label>
-                        <select id="table-select" class="form-control" required>
-                            <option value="">Seleccione Mesa...</option>
-                            <option value="Mesa 1">Mesa 1</option>
-                            <option value="Mesa 2">Mesa 2</option>
-                            <option value="Mesa 3">Mesa 3</option>
-                            <option value="Mesa 4">Mesa 4</option>
-                            <option value="Mesa 5">Mesa 5</option>
-                            <option value="Mesa 6">Mesa 6</option>
-                            <option value="Llevar">Para Llevar</option>
-                        </select>
-                    </div>
-
-                    <div class="cart-items" id="cart-items">
-                        <div style="text-align: center; color: var(--text-muted); padding: 20px 0;">Comanda vacía. Seleccione productos del menú.</div>
-                    </div>
-
-                    <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 1.25rem; margin-bottom: 16px; border-top: 1px solid var(--border-color); padding-top: 12px;">
-                        <span>Subtotal:</span>
-                        <span id="cart-subtotal">$0.00</span>
-                    </div>
-
-                    <button class="btn btn-success" style="width: 100%;" onclick="submitOrder()">
-                        📥 Confirmar / Enviar Comanda
-                    </button>
-                    <button class="btn btn-danger" id="btn-cancel-edit" style="width: 100%; margin-top: 8px; display: none;" onclick="cancelEditingState()">
-                        Cancelar Edición
-                    </button>
-                </div>
-            </div>
-
-            <!-- Listado de comandas puestas por el garzón para edición o anulación -->
-            <div class="waiter-orders">
-                <h3>Monitoreo y Edición de Pedidos (Salón)</h3>
-                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 10px;">
-                    * Regla de Negocio: Modificación o anulación únicamente en estado <strong>Pendiente</strong>.
-                </p>
-                <div class="audit-table-wrapper">
-                    <table class="audit-table">
-                        <thead>
-                            <tr>
-                                <th>Nº Pedido</th>
-                                <th>Mesa</th>
-                                <th>Detalle</th>
-                                <th>Total</th>
-                                <th>Estado</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody id="waiter-orders-table-body">
-                            <!-- Inyectado por JS -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </section>
-
-        <!-- VISTA 3: PANTALLA DE COCINA (FIFO) -->
-        <section id="view-kitchen" style="display: none;">
-            <div class="kitchen-header">
-                <h2>Pantalla de Cocina / Barista (Kanban FIFO)</h2>
-                <div>
-                    <span class="badge badge-pendiente" style="padding: 6px 12px; font-size: 0.85rem;">Orden cronológico: Más antiguo primero</span>
-                </div>
-            </div>
-
-            <div class="kitchen-grid" id="kitchen-kanban-board">
-                <!-- Tarjetas de órdenes dinámicas -->
-            </div>
-        </section>
-
-        <!-- VISTA 4: ADMINISTRADOR Y CAJA -->
-        <section id="view-admin" style="display: none;">
-            <h2>Administración Centralizada</h2>
-            
-            <div class="admin-tabs">
-                <button class="admin-tab-btn active" onclick="switchAdminTab('caja')" id="tab-caja">Panel de Caja (Cierre diario)</button>
-                <button class="admin-tab-btn" onclick="switchAdminTab('menu')" id="tab-menu">Mantenimiento de Menú</button>
-                <button class="admin-tab-btn" onclick="switchAdminTab('logs')" id="tab-logs">Auditoría (Logs de Seguridad)</button>
-            </div>
-
-            <!-- Pestaña 4a: Panel de Caja -->
-            <div id="admin-caja-sec">
-                <div class="dashboard-stats">
-                    <div class="stat-card">
-                        <h3>Ventas Acumuladas Hoy</h3>
-                        <p class="stat-val" id="stats-total-recaudado">$0.00</p>
-                    </div>
-                    <div class="stat-card">
-                        <h3>Pedidos Pagados</h3>
-                        <p class="stat-val" id="stats-pedidos-pagados" style="color: var(--primary);">0</p>
-                    </div>
-                    <div class="stat-card">
-                        <h3>Pendientes de Pago</h3>
-                        <p class="stat-val" id="stats-pedidos-listos" style="color: var(--warning);">0</p>
+                <!-- 2. ADMIN DASHBOARD VIEW -->
+                <div id="view-admin" class="view-section">
+                    <div class="placeholder-container">
+                        Admin Dashboard (Placeholder)
                     </div>
                 </div>
 
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                    <h3>Cobro de Pedidos Entregados</h3>
-                    <button class="btn btn-warning" onclick="triggerCierreCaja()">🔒 Ejecutar Cierre de Caja</button>
+                <!-- 3. CASHIER PAYMENTS VIEW -->
+                <div id="view-cashier" class="view-section">
+                    <div class="cashier-layout">
+                        
+                        <!-- Lista de cuentas por pagar -->
+                        <div class="cashier-pane">
+                            <div class="cashier-pane-white">
+                                <h3 class="pane-title">Unpaid Orders</h3>
+                                <div class="search-box-container">
+                                    <svg class="search-icon-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                                    <input type="text" placeholder="Search Table or ID...">
+                                </div>
+                                <div class="unpaid-list" id="cashier-unpaid-container">
+                                    <!-- Render dinámico -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Panel de procesamiento de pago -->
+                        <div class="cashier-pane">
+                            <div class="cashier-pane-white" id="payment-process-pane">
+                                <div class="payment-empty-state">
+                                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                                    <p>Select an order to process payment</p>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Barra global inferior de acumulación -->
+                    <div class="cashier-footer-bar">
+                        <div>
+                            <div class="footer-accumulated-label">Total Acumulado de la Jornada</div>
+                            <div class="footer-accumulated-value" id="box-total">$0.00 <span id="box-transactions">(0 transacciones)</span></div>
+                        </div>
+                        <button class="btn-cierre-caja" onclick="openCierreModal()">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><line x1="6" y1="8" x2="18" y2="8"/><line x1="6" y1="12" x2="18" y2="12"/><line x1="6" y1="16" x2="18" y2="16"/></svg>
+                            Cierre de Caja
+                        </button>
+                    </div>
                 </div>
 
-                <div class="audit-table-wrapper">
-                    <table class="audit-table">
-                        <thead>
-                            <tr>
-                                <th>Pedido</th>
-                                <th>Mesa</th>
-                                <th>Detalle</th>
-                                <th>Subtotal</th>
-                                <th>Estado</th>
-                                <th>Acción</th>
-                            </tr>
-                        </thead>
-                        <tbody id="admin-caja-table-body">
-                            <!-- Inyectado por JS -->
-                        </tbody>
-                    </table>
-                </div>
             </div>
+        </main>
+    </div>
 
-            <!-- Pestaña 4b: Mantenimiento del Menú -->
-            <div id="admin-menu-sec" style="display: none;">
-                <h3 style="margin-bottom: 12px;">Mantenimiento Diario de Precios e Inventario</h3>
-                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px;">
-                    Cualquier cambio de precio o estado "Agotado" se refleja inmediatamente en el menú digital del Garzón.
-                </p>
-                <div class="menu-maintainer-list" id="admin-menu-list">
-                    <!-- Productos administrados aquí -->
-                </div>
+    <!-- ================= MODALES DEL SISTEMA ================= -->
+    <div class="modal-overlay" id="cierre-modal">
+        <div class="modal-card">
+            <h2>Resumen Operativo de Cierre</h2>
+            <div id="cierre-modal-body" style="font-size: 15px; line-height: 1.6; color: #4A3E36;">
+                <!-- Cargado por JS -->
             </div>
-
-            <!-- Pestaña 4c: Logs de Auditoría -->
-            <div id="admin-logs-sec" style="display: none;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                    <h3>Historial de Auditoría de Seguridad</h3>
-                    <button class="btn btn-danger" style="padding: 4px 10px; font-size: 0.8rem;" onclick="clearAuditLogs()">Limpiar Logs</button>
-                </div>
-                <div class="audit-table-wrapper">
-                    <table class="audit-table">
-                        <thead>
-                            <tr>
-                                <th>Marca de Tiempo</th>
-                                <th>Usuario</th>
-                                <th>Rol</th>
-                                <th>Acción Crítica</th>
-                            </tr>
-                        </thead>
-                        <tbody id="audit-logs-table-body">
-                            <!-- Logs generados por JS -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </section>
-
-    </main>
-
-    <!-- CONTENEDOR DE NOTIFICACIONES TOAST (WebSocket simulado < 2s) -->
-    <div class="toast-container" id="toast-container" aria-live="polite"></div>
-
-    <!-- MODAL POPUP PARA RESULTADOS DE CIERRE DE CAJA -->
-    <div class="modal-overlay" id="close-cash-modal" style="display: none;">
-        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
-            <h3 id="modal-title">Reporte Técnico de Cierre de Caja</h3>
-            <hr style="border-color: var(--border-color); margin-bottom: 12px;">
-            <div style="font-size: 0.95rem; line-height: 1.6; margin-bottom: 20px;">
-                <p><strong>Operador:</strong> <span id="cierre-operador">N/A</span></p>
-                <p><strong>Fecha/Hora:</strong> <span id="cierre-fecha">N/A</span></p>
-                <p><strong>Pedidos Procesados (Pagados):</strong> <span id="cierre-cant-pedidos">0</span></p>
-                <p style="font-size: 1.2rem; color: var(--success); margin: 8px 0;"><strong>Venta Bruta Total:</strong> <span id="cierre-venta-total">$0.00</span></p>
-                <p><strong>Pedidos Anulados durante la jornada:</strong> <span id="cierre-cant-anulados">0</span></p>
-                
-                <h4 style="margin-top: 14px; margin-bottom: 6px;">Ventas por Producto:</h4>
-                <div id="cierre-desglose" style="background: var(--bg-card); padding: 8px; border-radius: 6px; max-height: 150px; overflow-y: auto;">
-                    <!-- Detalle por item -->
-                </div>
-            </div>
-            <div style="display: flex; gap: 8px; justify-content: flex-end;">
-                <button class="btn btn-primary" onclick="confirmResetCaja()">Confirmar y Resetear Jornada</button>
-                <button class="btn btn-danger" onclick="document.getElementById('close-cash-modal').style.display='none'">Cerrar</button>
+            <div class="modal-actions">
+                <button class="modal-btn secondary" onclick="closeCierreModal()">Volver</button>
+                <button class="modal-btn primary" onclick="executeCierreCompleto()">Confirmar Cierre</button>
             </div>
         </div>
     </div>
 
-    <!-- CONTROL INFERIOR DE INACTIVIDAD (SIMULACIÓN AUTOMÁTICA) -->
-    <div style="position: fixed; bottom: 0; left: 0; right: 0; background: #111827; border-top: 2px solid var(--border-color); padding: 8px 16px; display: flex; justify-content: space-between; align-items: center; z-index: 998; font-size: 0.8rem;">
-        <div id="inactivity-timer-display">⏱️ Autocierre de sesión en: 30:00 (Inactivo)</div>
-        <div style="display: flex; gap: 8px;">
-            <button class="btn-evaluator" style="font-size: 0.75rem; padding: 4px 8px; background-color: var(--danger);" onclick="simulateInactivityTimeout()">Simular +30 Min de Inactividad</button>
-            <button class="btn-evaluator" style="font-size: 0.75rem; padding: 4px 8px;" onclick="resetInactivityTimer()">Actividad</button>
-        </div>
-    </div>
-
+    <!-- ================= CONTROLADORES DE LOGICA (JAVASCRIPT) ================= -->
     <script>
-        /* ==========================================================================
-           BASE DE DATOS INICIAL Y PERSISTENCIA DE ESTADO
-           ========================================================================== */
-        const INITIAL_PRODUCTS = [
-            { id: 1, name: "Café Americano", price: 3.50, category: "Café", available: true },
-            { id: 2, name: "Caffè Latte", price: 4.25, category: "Café", available: true },
-            { id: 3, name: "Muffin Arándanos", price: 3.75, category: "Pastelería", available: true },
-            { id: 4, name: "Croissant", price: 2.95, category: "Pastelería", available: true },
-            { id: 5, name: "Té Helado", price: 3.00, category: "Bebidas Frías", available: true },
-            { id: 6, name: "Jugo de Naranja", price: 3.25, category: "Bebidas Frías", available: true },
-            { id: 7, name: "Papas Rústicas", price: 4.00, category: "Snacks", available: true },
-            { id: 8, name: "Tostón de Palta", price: 4.50, category: "Snacks", available: true }
+        // Datos Iniciales Estables de Semilla (Basados exactamente en capturas de pantalla)
+        const initialOrders = [
+            {
+                id: 42,
+                table: "Table 04",
+                type: "Salón",
+                time: "02:32",
+                priority: false,
+                items: [
+                    { name: "2x Cappuccino Grande (Leche Avena)", done: false },
+                    { name: "1x Croissant Almendras", done: false },
+                    { name: "1x Espresso Doble", done: false }
+                ],
+                status: "nuevo",
+                price: 13.50
+            },
+            {
+                id: 38,
+                table: "Takeaway",
+                type: "Para Llevar",
+                time: "13:02",
+                priority: true, // Alerta visual roja
+                items: [
+                    { name: "4x Flat White", done: false },
+                    { name: "2x Tostada Aguacate", done: false }
+                ],
+                status: "nuevo",
+                price: 18.00
+            },
+            {
+                id: 39,
+                table: "Table 12",
+                type: "Salón",
+                time: "05:37",
+                priority: false,
+                items: [
+                    { name: "1x Latte Vainilla", done: true },
+                    { name: "1x Sandwich Pavo", done: false }
+                ],
+                status: "preparacion",
+                price: 9.25
+            },
+            {
+                id: 37,
+                table: "Table 02",
+                type: "Salón",
+                time: "08:58",
+                priority: false,
+                items: [
+                    { name: "2x Americano Frio", done: true }
+                ],
+                status: "listo",
+                price: 6.00
+            }
         ];
 
-        const ROLES = {
-            '11.111.111-1': { role: 'Garzón', name: 'Juan Waiter', pass: 'garzon123' },
-            '22.222.222-2': { role: 'Barista', name: 'Lucía Kitchen', pass: 'cocina123' },
-            '33.333.333-3': { role: 'Administrador', name: 'Admin Don Cafe', pass: 'admin123' }
-        };
+        let orders = [];
+        let totalSales = 0;
+        let transactionsCount = 0;
+        let selectedOrderForPayment = null;
 
-        let state = {
-            menu: [],
-            orders: [],
-            logs: [],
-            currentUser: null,
-            activeCategory: "Café",
-            currentCart: [], // { productId, qty }
-            editingOrderId: null,
-            adminTab: "caja"
-        };
-
-        // Tiempo del temporizador de inactividad
-        let inactivityTimeoutLimit = 30 * 60; // 30 minutos en segundos
-        let secondsLeft = inactivityTimeoutLimit;
-        let inactivityInterval = null;
-
-        /* ==========================================================================
-           INICIALIZADOR DEL SISTEMA (CARGA LOCALSTORAGE)
-           ========================================================================== */
-        function initSystem() {
-            // Cargar de LocalStorage o inicializar defaults
-            state.menu = JSON.parse(localStorage.getItem('cafe_menu')) || INITIAL_PRODUCTS;
-            state.orders = JSON.parse(localStorage.getItem('cafe_orders')) || [];
-            state.logs = JSON.parse(localStorage.getItem('cafe_logs')) || [];
-            state.currentUser = JSON.parse(localStorage.getItem('cafe_session')) || null;
-
-            saveStateToStorage();
-
-            // Formateador dinámico para el campo RUT en Login
-            const rutInput = document.getElementById('login-rut');
-            if (rutInput) {
-                rutInput.addEventListener('input', (e) => handleRutInput(e));
+        // Inicialización y Carga Resiliente desde localStorage
+        window.addEventListener('DOMContentLoaded', () => {
+            if (!localStorage.getItem('cafe_orders')) {
+                localStorage.setItem('cafe_orders', JSON.stringify(initialOrders));
+                localStorage.setItem('cafe_total_sales', '0');
+                localStorage.setItem('cafe_transactions', '0');
             }
+            loadState();
+            renderAll();
+        });
 
-            // Monitorear clicks para reiniciar contador de inactividad
-            document.addEventListener('click', resetInactivityTimer);
-            document.addEventListener('keypress', resetInactivityTimer);
+        function loadState() {
+            orders = JSON.parse(localStorage.getItem('cafe_orders'));
+            totalSales = parseFloat(localStorage.getItem('cafe_total_sales')) || 0;
+            transactionsCount = parseInt(localStorage.getItem('cafe_transactions')) || 0;
+        }
 
-            startInactivityTimer();
+        function saveState() {
+            localStorage.setItem('cafe_orders', JSON.stringify(orders));
+            localStorage.setItem('cafe_total_sales', totalSales.toFixed(2));
+            localStorage.setItem('cafe_transactions', transactionsCount.toString());
+        }
 
-            // Renderizado inicial según sesión activa
-            if (state.currentUser) {
-                switchGlobalView(getRoleDefaultView(state.currentUser.role));
+        // Sistema Autenticación SPA
+        function handleLogin() {
+            const email = document.getElementById('login-email').value;
+            const pass = document.getElementById('login-password').value;
+            const errorMsg = document.getElementById('login-error');
+
+            if (email === 'admin@cafe.cl' && pass === 'admin123') {
+                document.getElementById('top-role-display').innerText = 'Admin';
+                successLogin();
+            } else if (email === 'cocina@cafe.cl' && pass === 'cocina123') {
+                document.getElementById('top-role-display').innerText = 'Barista';
+                successLogin();
+                switchView('kitchen');
             } else {
-                switchGlobalView('login');
+                errorMsg.style.display = 'block';
             }
-
-            renderMenuMaintainer();
-            renderWaiterMenu();
-            renderWaiterOrders();
-            renderKitchenOrders();
-            renderCajaPanel();
-            renderAuditLogs();
-            updateSessionHeader();
         }
 
-        function saveStateToStorage() {
-            localStorage.setItem('cafe_menu', JSON.stringify(state.menu));
-            localStorage.setItem('cafe_orders', JSON.stringify(state.orders));
-            localStorage.setItem('cafe_logs', JSON.stringify(state.logs));
-            localStorage.setItem('cafe_session', JSON.stringify(state.currentUser));
+        function successLogin() {
+            document.getElementById('login-view').style.display = 'none';
+            document.getElementById('app-layout').style.display = 'grid';
         }
 
-        /* ==========================================================================
-           MÓDULO DE AUTENTICACIÓN Y CONTROL DE ACCESO
-           ========================================================================== */
-        function handleRutInput(e) {
-            let val = e.target.value.replace(/[^0-9kK]/g, '');
-            if (val.length > 9) val = val.slice(0, 9);
-            if (val.length === 0) {
-                e.target.value = '';
-                return;
-            }
-            let formatted = '';
-            if (val.length === 1) {
-                formatted = val;
-            } else {
-                let dv = val.slice(-1);
-                let num = val.slice(0, -1);
-                if (num.length <= 3) {
-                    formatted = num + '-' + dv;
-                } else if (num.length <= 6) {
-                    formatted = num.slice(0, num.length - 3) + '.' + num.slice(num.length - 3) + '-' + dv;
-                } else {
-                    formatted = num.slice(0, num.length - 6) + '.' + num.slice(num.length - 6, num.length - 3) + '.' + num.slice(num.length - 3) + '-' + dv;
-                }
-            }
-            e.target.value = formatted.toUpperCase();
+        function logout() {
+            document.getElementById('app-layout').style.display = 'none';
+            document.getElementById('login-view').style.display = 'flex';
+            document.getElementById('login-error').style.display = 'none';
         }
 
-        function validateChileanRut(rut) {
-            if (!/^[0-9]{1,2}\.[0-9]{3}\.[0-9]{3}-[0-9kK]{1}$/.test(rut)) return false;
-            let clean = rut.replace(/\./g, '').split('-');
-            let num = clean[0];
-            let dv = clean[1].toLowerCase();
+        // Navegación de Vistas SPA
+        function switchView(viewName) {
+            document.querySelectorAll('.view-section').forEach(view => view.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+
+            document.getElementById(`view-${viewName}`).classList.add('active');
+            document.getElementById(`nav-${viewName}`).classList.add('active');
             
-            let sum = 0;
-            let mul = 2;
-            for (let i = num.length - 1; i >= 0; i--) {
-                sum += parseInt(num.charAt(i)) * mul;
-                mul = mul === 7 ? 2 : mul + 1;
-            }
-            let expected = 11 - (sum % 11);
-            let expectedDv = expected === 11 ? '0' : expected === 10 ? 'k' : expected.toString();
-            return dv === expectedDv;
+            renderAll();
         }
 
-        function handleLogin(event) {
-            event.preventDefault();
-            const rut = document.getElementById('login-rut').value;
-            const pass = document.getElementById('login-pass').value;
-            const errorElement = document.getElementById('login-error-msg');
-
-            errorElement.style.display = 'none';
-
-            if (!validateChileanRut(rut)) {
-                errorElement.innerText = "Datos incorrectos, intente nuevamente";
-                errorElement.style.display = 'block';
-                return;
-            }
-
-            const userMatch = ROLES[rut];
-            if (userMatch && userMatch.pass === pass) {
-                state.currentUser = {
-                    rut: rut,
-                    name: userMatch.name,
-                    role: userMatch.role,
-                    loginTime: new Date().toLocaleTimeString()
-                };
-                saveStateToStorage();
-                addAuditLog(state.currentUser.rut, state.currentUser.role, "Inicio de sesión exitoso");
-                updateSessionHeader();
-                showToast(`Bienvenido(a), ${state.currentUser.name}`, 'success');
-                switchGlobalView(getRoleDefaultView(state.currentUser.role));
-            } else {
-                errorElement.innerText = "Datos incorrectos, intente nuevamente";
-                errorElement.style.display = 'block';
-            }
+        // Motores de Render Dinámico (Basados en Interfaces de Stitch)
+        function renderAll() {
+            renderKitchen();
+            renderCashier();
         }
 
-        function handleLogout(isAuto = false) {
-            if (state.currentUser) {
-                addAuditLog(
-                    state.currentUser.rut, 
-                    state.currentUser.role, 
-                    isAuto ? "Cierre automático por inactividad (30 min)" : "Cierre de sesión voluntario"
-                );
-            }
-            state.currentUser = null;
-            state.currentCart = [];
-            state.editingOrderId = null;
-            saveStateToStorage();
-            updateSessionHeader();
-            switchGlobalView('login');
-            if (isAuto) {
-                alert("⚠️ Su sesión ha expirado por inactividad de 30 minutos.");
-            } else {
-                showToast("Sesión cerrada exitosamente", "warning");
-            }
-        }
+        function renderKitchen() {
+            const colNew = document.getElementById('col-new-cards');
+            const colPrep = document.getElementById('col-prep-cards');
+            const colReady = document.getElementById('col-ready-cards');
 
-        function getRoleDefaultView(role) {
-            if (role === 'Garzón') return 'waiter';
-            if (role === 'Barista') return 'kitchen';
-            if (role === 'Administrador') return 'admin';
-            return 'login';
-        }
+            colNew.innerHTML = '';
+            colPrep.innerHTML = '';
+            colReady.innerHTML = '';
 
-        /* ==========================================================================
-           LOGICA DEL TEMPORIZADOR DE INACTIVIDAD (30 MINUTOS)
-           ========================================================================== */
-        function startInactivityTimer() {
-            clearInterval(inactivityInterval);
-            secondsLeft = inactivityTimeoutLimit;
-            inactivityInterval = setInterval(() => {
-                if (state.currentUser) {
-                    secondsLeft--;
-                    updateInactivityDisplay();
-                    if (secondsLeft <= 0) {
-                        handleLogout(true);
-                    }
-                } else {
-                    document.getElementById('inactivity-timer-display').innerText = "⏱️ Sin sesión activa";
-                }
-            }, 1000);
-        }
+            let countNew = 0, countPrep = 0, countReady = 0;
 
-        function resetInactivityTimer() {
-            secondsLeft = inactivityTimeoutLimit;
-            updateInactivityDisplay();
-        }
-
-        function updateInactivityDisplay() {
-            const m = Math.floor(secondsLeft / 60).toString().padStart(2, '0');
-            const s = (secondsLeft % 60).toString().padStart(2, '0');
-            document.getElementById('inactivity-timer-display').innerText = `⏱️ Inactividad (Auto-Logout): ${m}:${s}`;
-        }
-
-        function simulateInactivityTimeout() {
-            secondsLeft = 1; // Disparará el callback en 1 segundo
-        }
-
-        /* ==========================================================================
-           SELECTOR GLOBAL DE VISTAS (PARA EVALUADORES / EXAMINADORES)
-           ========================================================================== */
-        function switchGlobalView(viewName) {
-            const views = ['login', 'waiter', 'kitchen', 'admin'];
-            views.forEach(v => {
-                document.getElementById(`view-${v}`).style.display = (v === viewName) ? 'block' : 'none';
-                const evalBtn = document.getElementById(`eval-${v}`);
-                if (evalBtn) {
-                    if (v === viewName) evalBtn.classList.add('active');
-                    else evalBtn.classList.remove('active');
-                }
-            });
-
-            // Forzar simulación de usuario si el evaluador navega directamente
-            if (viewName !== 'login' && !state.currentUser) {
-                mockUserSessionForView(viewName);
-            }
-
-            renderWaiterMenu();
-            renderWaiterOrders();
-            renderKitchenOrders();
-            renderCajaPanel();
-            renderAuditLogs();
-        }
-
-        function mockUserSessionForView(viewName) {
-            if (viewName === 'waiter') {
-                state.currentUser = { rut: '11.111.111-1', name: 'Juan (Mock Evaluador)', role: 'Garzón' };
-            } else if (viewName === 'kitchen') {
-                state.currentUser = { rut: '22.222.222-2', name: 'Lucía (Mock Evaluador)', role: 'Barista' };
-            } else if (viewName === 'admin') {
-                state.currentUser = { rut: '33.333.333-3', name: 'Admin (Mock Evaluador)', role: 'Administrador' };
-            }
-            saveStateToStorage();
-            updateSessionHeader();
-            showToast(`Evaluación: Entrando con rol de ${state.currentUser.role}`, 'warning');
-        }
-
-        function updateSessionHeader() {
-            const container = document.getElementById('session-display');
-            if (state.currentUser) {
-                container.innerHTML = `
-                    <span>👤 <strong>${state.currentUser.name}</strong> (${state.currentUser.role})</span>
-                    <button class="btn btn-danger" style="padding: 4px 8px; font-size: 0.8rem;" onclick="handleLogout(false)">Salir</button>
-                `;
-            } else {
-                container.innerHTML = `<span>🔒 Iniciar Sesión</span>`;
-            }
-        }
-
-        /* ==========================================================================
-           VISTA INTERFAZ DE GARZÓN - LÓGICA DE NEGOCIO Y RENDERIZADO
-           ========================================================================== */
-        function renderWaiterMenu() {
-            // Filtrar y renderizar categorías de menú
-            const categories = ["Café", "Pastelería", "Bebidas Frías", "Snacks"];
-            const tabsContainer = document.getElementById('category-tabs');
-            tabsContainer.innerHTML = '';
-            
-            categories.forEach(cat => {
-                const button = document.createElement('button');
-                button.className = `category-tab ${state.activeCategory === cat ? 'active' : ''}`;
-                button.innerText = cat;
-                button.setAttribute('role', 'tab');
-                button.setAttribute('aria-selected', state.activeCategory === cat ? 'true' : 'false');
-                button.onclick = () => {
-                    state.activeCategory = cat;
-                    renderWaiterMenu();
-                };
-                tabsContainer.appendChild(button);
-            });
-
-            // Grid de Productos disponibles (No ocultados por admin)
-            const gridContainer = document.getElementById('products-grid');
-            gridContainer.innerHTML = '';
-
-            const filteredProducts = state.menu.filter(p => p.category === state.activeCategory);
-            
-            filteredProducts.forEach(p => {
-                const card = document.createElement('div');
-                card.className = `product-card ${!p.available ? 'sold-out' : ''}`;
-                card.innerHTML = `
-                    <div>
-                        <div class="product-name">${p.name}</div>
-                        <div style="font-size: 0.8rem; color: var(--text-muted);">${p.category}</div>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
-                        <span class="product-price">$${p.price.toFixed(2)}</span>
-                        ${p.available ? 
-                            `<button class="btn btn-primary" style="padding: 6px 12px; font-size: 0.85rem;" onclick="addToCart(${p.id})">+ Agregar</button>` : 
-                            `<span class="badge" style="background:#551a1a; color:#fca5a5;">AGOTADO</span>`
-                        }
-                    </div>
-                `;
-                gridContainer.appendChild(card);
-            });
-        }
-
-        function addToCart(productId) {
-            const product = state.menu.find(p => p.id === productId);
-            if (!product || !product.available) return;
-
-            const existing = state.currentCart.find(item => item.productId === productId);
-            if (existing) {
-                existing.qty++;
-            } else {
-                state.currentCart.push({ productId, qty: 1 });
-            }
-            renderCart();
-        }
-
-        function updateCartQty(productId, change) {
-            const itemIndex = state.currentCart.findIndex(item => item.productId === productId);
-            if (itemIndex === -1) return;
-
-            state.currentCart[itemIndex].qty += change;
-            if (state.currentCart[itemIndex].qty <= 0) {
-                state.currentCart.splice(itemIndex, 1);
-            }
-            renderCart();
-        }
-
-        function renderCart() {
-            const container = document.getElementById('cart-items');
-            const subtotalDisplay = document.getElementById('cart-subtotal');
-            const comandaTitle = document.getElementById('comanda-title');
-            
-            if (state.editingOrderId) {
-                comandaTitle.innerHTML = `✍️ Editando Pedido <span style="color:var(--warning)">#${state.editingOrderId}</span>`;
-                document.getElementById('btn-cancel-edit').style.display = 'block';
-            } else {
-                comandaTitle.innerText = "Nueva Comanda";
-                document.getElementById('btn-cancel-edit').style.display = 'none';
-            }
-
-            container.innerHTML = '';
-            let subtotal = 0;
-
-            if (state.currentCart.length === 0) {
-                container.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 20px 0;">Comanda vacía. Seleccione productos del menú.</div>`;
-                subtotalDisplay.innerText = "$0.00";
-                return;
-            }
-
-            state.currentCart.forEach(item => {
-                const product = state.menu.find(p => p.id === item.productId);
-                if (!product) return;
-                const cost = product.price * item.qty;
-                subtotal += cost;
-
-                const itemRow = document.createElement('div');
-                itemRow.className = 'cart-item';
-                itemRow.innerHTML = `
-                    <div>
-                        <div style="font-weight: 600;">${product.name}</div>
-                        <div style="font-size: 0.85rem; color: var(--warning);">$${product.price.toFixed(2)} c/u</div>
-                    </div>
-                    <div class="cart-controls">
-                        <button class="btn-qty" onclick="updateCartQty(${product.id}, -1)">-</button>
-                        <span style="min-width: 24px; text-align: center; font-weight: bold;">${item.qty}</span>
-                        <button class="btn-qty" onclick="updateCartQty(${product.id}, 1)">+</button>
-                        <span style="margin-left: 8px; font-weight: bold; min-width: 50px; text-align: right;">$${cost.toFixed(2)}</span>
-                    </div>
-                `;
-                container.appendChild(itemRow);
-            });
-
-            subtotalDisplay.innerText = `$${subtotal.toFixed(2)}`;
-        }
-
-        function submitOrder() {
-            const tableSelect = document.getElementById('table-select');
-            const tableName = tableSelect.value;
-
-            if (!tableName) {
-                alert("Debe asignar una mesa para la comanda.");
-                return;
-            }
-            if (state.currentCart.length === 0) {
-                alert("La comanda actual no posee productos.");
-                return;
-            }
-
-            const parsedItems = state.currentCart.map(c => {
-                const prod = state.menu.find(p => p.id === c.productId);
-                return {
-                    id: prod.id,
-                    name: prod.name,
-                    price: prod.price,
-                    qty: c.qty
-                };
-            });
-
-            const total = parsedItems.reduce((acc, current) => acc + (current.price * current.qty), 0);
-
-            if (state.editingOrderId) {
-                // Modificar pedido existente (Debe estar Pendiente para poder modificarse)
-                const orderIndex = state.orders.findIndex(o => o.id === state.editingOrderId);
-                if (orderIndex === -1 || state.orders[orderIndex].status !== 'Pendiente') {
-                    showToast("Error: No es posible editar el pedido actual por un cambio de estado en cocina.", "danger");
-                    cancelEditingState();
-                    return;
-                }
-                
-                state.orders[orderIndex].items = parsedItems;
-                state.orders[orderIndex].total = total;
-                state.orders[orderIndex].table = tableName;
-
-                addAuditLog(
-                    state.currentUser ? state.currentUser.rut : "MOCK", 
-                    state.currentUser ? state.currentUser.role : "Garzón", 
-                    `Editó la comanda #${state.editingOrderId} (${tableName})`
-                );
-
-                showToast(`Comanda #${state.editingOrderId} modificada con éxito`, "success");
-                cancelEditingState();
-            } else {
-                // Nuevo Pedido
-                const newOrder = {
-                    id: state.orders.length > 0 ? Math.max(...state.orders.map(o => o.id)) + 1 : 1001,
-                    table: tableName,
-                    items: parsedItems,
-                    status: 'Pendiente', // Estados: Pendiente -> En preparación -> Listo -> Pagado
-                    timestamp: new Date().toISOString(),
-                    total: total,
-                    createdBy: state.currentUser ? state.currentUser.name : "Garzón"
-                };
-
-                state.orders.push(newOrder);
-
-                addAuditLog(
-                    state.currentUser ? state.currentUser.rut : "MOCK", 
-                    state.currentUser ? state.currentUser.role : "Garzón", 
-                    `Generó la comanda #${newOrder.id} (${tableName})`
-                );
-
-                showToast(`Comanda #${newOrder.id} despachada a Cocina`, "success");
-            }
-
-            // Limpieza
-            state.currentCart = [];
-            tableSelect.value = '';
-            saveStateToStorage();
-            renderCart();
-            renderWaiterOrders();
-            renderKitchenOrders();
-            renderCajaPanel();
-        }
-
-        function cancelEditingState() {
-            state.editingOrderId = null;
-            state.currentCart = [];
-            document.getElementById('table-select').value = '';
-            document.getElementById('btn-cancel-edit').style.display = 'none';
-            renderCart();
-        }
-
-        function editWaiterOrder(orderId) {
-            const order = state.orders.find(o => o.id === orderId);
-            if (!order) return;
-
-            // REGLA DE NEGOCIO: Edición sólo admisible en estado PENDIENTE
-            if (order.status !== 'Pendiente') {
-                showToast("Acción prohibida: Solo pedidos con estado 'Pendiente' pueden ser modificados.", "danger");
-                return;
-            }
-
-            state.editingOrderId = order.id;
-            state.currentCart = order.items.map(item => ({
-                productId: item.id,
-                qty: item.qty
-            }));
-
-            document.getElementById('table-select').value = order.table;
-            renderCart();
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        function annulWaiterOrder(orderId) {
-            const orderIndex = state.orders.findIndex(o => o.id === orderId);
-            if (orderIndex === -1) return;
-
-            const order = state.orders[orderIndex];
-
-            // REGLA DE NEGOCIO: Anulación sólo admisible en estado PENDIENTE
-            if (order.status !== 'Pendiente') {
-                showToast("Acción prohibida: Solo pedidos con estado 'Pendiente' pueden ser anulados.", "danger");
-                return;
-            }
-
-            if (confirm(`¿Está seguro de que desea anular la Comanda #${order.id}?`)) {
-                state.orders[orderIndex].status = "Anulado";
-                addAuditLog(
-                    state.currentUser ? state.currentUser.rut : "MOCK", 
-                    state.currentUser ? state.currentUser.role : "Garzón", 
-                    `Anuló la comanda #${order.id}`
-                );
-                saveStateToStorage();
-                showToast(`Comanda #${order.id} anulada`, "danger");
-                renderWaiterOrders();
-                renderKitchenOrders();
-                renderCajaPanel();
-            }
-        }
-
-        function renderWaiterOrders() {
-            const tbody = document.getElementById('waiter-orders-table-body');
-            tbody.innerHTML = '';
-
-            // Mostrar todos los pedidos activos menos los anulados o pagados (o todos para auditoría rápida del garzón)
-            const activeOrders = state.orders.filter(o => o.status !== 'Pagado' && o.status !== 'Anulado');
-
-            if (activeOrders.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--text-muted);">Sin pedidos activos en el salón.</td></tr>`;
-                return;
-            }
-
-            activeOrders.forEach(o => {
-                const tr = document.createElement('tr');
-                const itemsText = o.items.map(i => `${i.qty}x ${i.name}`).join(', ');
-                const isEditable = o.status === 'Pendiente';
-
-                tr.innerHTML = `
-                    <td><strong>#${o.id}</strong></td>
-                    <td>${o.table}</td>
-                    <td style="font-size: 0.85rem; max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${itemsText}">${itemsText}</td>
-                    <td>$${o.total.toFixed(2)}</td>
-                    <td><span class="badge badge-${o.status.toLowerCase()}">${o.status}</span></td>
-                    <td>
-                        <button class="btn btn-warning" style="padding: 4px 8px; font-size: 0.75rem; width: auto; display: inline-flex;" 
-                                ${!isEditable ? 'disabled' : ''} onclick="editWaiterOrder(${o.id})">Editar</button>
-                        <button class="btn btn-danger" style="padding: 4px 8px; font-size: 0.75rem; width: auto; display: inline-flex;" 
-                                ${!isEditable ? 'disabled' : ''} onclick="annulWaiterOrder(${o.id})">Anular</button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-
-        /* ==========================================================================
-           VISTA 3: PANTALLA DE COCINA / BARISTA - FIFO Y WEBSOCKETS MOCK
-           ========================================================================== */
-        function renderKitchenOrders() {
-            const board = document.getElementById('kitchen-kanban-board');
-            board.innerHTML = '';
-
-            // REGLA DE NEGOCIO: Estricto flujo FIFO (First In, First Out)
-            // Filtra pedidos en cola para cocina ("Pendiente" o "En preparación") ordenados cronológicamente (antiguos primero)
-            const kitchenQueue = state.orders
-                .filter(o => o.status === 'Pendiente' || o.status === 'En preparación')
-                .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-
-            if (kitchenQueue.length === 0) {
-                board.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--text-muted); border: 2px dashed var(--border-color); border-radius:12px;">
-                    🍳 Cocina Despejada - No hay comandas pendientes.
-                </div>`;
-                return;
-            }
-
-            kitchenQueue.forEach(o => {
-                const elapsedSeconds = Math.floor((new Date() - new Date(o.timestamp)) / 1000);
-                const isNew = o.status === 'Pendiente';
-
-                const card = document.createElement('article');
-                card.className = `kitchen-card status-${o.status.toLowerCase()}`;
-                
-                // Formateador de tiempo transcurrido
-                let timeStr = elapsedSeconds < 60 ? `${elapsedSeconds} seg` : `${Math.floor(elapsedSeconds / 60)} min`;
-
-                card.innerHTML = `
-                    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-                        <div>
-                            <span style="font-size:0.75rem; color:var(--text-muted);">Pedido</span>
-                            <h3 style="margin-top:-4px;">#${o.id}</h3>
+            orders.forEach(order => {
+                if (order.status === 'nuevo') {
+                    countNew++;
+                    const card = document.createElement('div');
+                    card.className = `order-card ${order.priority ? 'alert-priority' : ''}`;
+                    card.innerHTML = `
+                        <div class="card-meta">
+                            <span class="card-id">#${order.id}</span>
+                            <span class="card-timer">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                ${order.time}
+                            </span>
                         </div>
-                        <span class="badge badge-${o.status.toLowerCase()}">${o.status === 'Pendiente' ? 'Pendiente (FIFO)' : o.status}</span>
-                    </div>
-                    
-                    <div style="margin-top:10px; font-size:1.1rem; font-weight:700; color:var(--warning);">
-                        📍 ${o.table}
-                    </div>
-
-                    <div style="margin-top:10px; background:var(--bg-card); padding:10px; border-radius:6px; border:1px solid var(--border-color);">
-                        <ul style="list-style-type: none; padding-left:0;">
-                            ${o.items.map(i => `<li style="padding: 3px 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
-                                <strong style="color:var(--success); font-size:1.15rem;">${i.qty}</strong> x ${i.name}
-                            </li>`).join('')}
+                        <div class="card-table">${order.table}</div>
+                        <ul class="card-items-list">
+                            ${order.items.map(item => `<li>• ${item.name}</li>`).join('')}
                         </ul>
-                    </div>
-
-                    <div class="kitchen-timer">
-                        ⏳ Transcurrido: <strong style="${elapsedSeconds > 180 ? 'color:var(--danger);' : ''}">${timeStr}</strong>
-                    </div>
-
-                    <div style="margin-top:15px; display:flex; gap:8px;">
-                        ${isNew ? 
-                            `<button class="btn btn-primary" style="flex:1; padding:8px;" onclick="changeOrderStatus(${o.id}, 'En preparación')">👨‍🍳 Preparar</button>` :
-                            `<button class="btn btn-success" style="flex:1; padding:8px;" onclick="changeOrderStatus(${o.id}, 'Listo')">✅ Listo para Servir</button>`
-                        }
-                    </div>
-                `;
-                board.appendChild(card);
-            });
-        }
-
-        function changeOrderStatus(orderId, newStatus) {
-            const orderIndex = state.orders.findIndex(o => o.id === orderId);
-            if (orderIndex === -1) return;
-
-            const order = state.orders[orderIndex];
-            state.orders[orderIndex].status = newStatus;
-            saveStateToStorage();
-
-            addAuditLog(
-                state.currentUser ? state.currentUser.rut : "MOCK_KITCHEN", 
-                state.currentUser ? state.currentUser.role : "Barista", 
-                `Cambió comanda #${order.id} a estado '${newStatus}'`
-            );
-
-            showToast(`Pedido #${order.id} pasó a '${newStatus}'`, "success");
-
-            // SIMULACIÓN WEBSOCKETS (<2 SEGUNDOS):
-            // Si pasa a estado "Listo", notificar reactivamente al Garzón de manera inmediata
-            if (newStatus === 'Listo') {
-                setTimeout(() => {
-                    triggerWaiterNotification(order.id, order.table);
-                }, 800); // Demora simulada de 800 milisegundos (menor a 2s de especificación técnica)
-            }
-
-            renderKitchenOrders();
-            renderWaiterOrders();
-            renderCajaPanel();
-        }
-
-        function triggerWaiterNotification(orderId, table) {
-            // Emite una alerta visual interactiva visible en cualquier parte del sistema
-            showToast(`📢 ¡NOTIFICACIÓN DE COCINA! El Pedido #${orderId} para la "${table}" está LISTO para ser servido.`, "success", 8000);
-        }
-
-        // Refrescar el contador de tiempo de la cocina automáticamente cada 10 segundos
-        setInterval(() => {
-            if (document.getElementById('view-kitchen').style.display === 'block') {
-                renderKitchenOrders();
-            }
-        }, 10000);
-
-        /* ==========================================================================
-           VISTA 4: INTERFAZ ADMINISTRADOR Y PANEL DE CAJA
-           ========================================================================== */
-        function switchAdminTab(tabName) {
-            state.adminTab = tabName;
-            const tabs = ['caja', 'menu', 'logs'];
-            tabs.forEach(t => {
-                document.getElementById(`admin-${t}-sec`).style.display = (t === tabName) ? 'block' : 'none';
-                const btn = document.getElementById(`tab-${t}`);
-                if (btn) {
-                    if (t === tabName) btn.classList.add('active');
-                    else btn.classList.remove('active');
+                        <button class="card-action-btn" onclick="moveOrder(${order.id}, 'preparacion')">Comenzar</button>
+                    `;
+                    colNew.appendChild(card);
+                } 
+                else if (order.status === 'preparacion') {
+                    countPrep++;
+                    const card = document.createElement('div');
+                    card.className = 'order-card';
+                    card.innerHTML = `
+                        <div class="card-meta">
+                            <span class="card-id">#${order.id}</span>
+                            <span class="card-timer">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                ${order.time}
+                            </span>
+                        </div>
+                        <div class="card-table">${order.table}</div>
+                        <ul class="card-items-list">
+                            ${order.items.map((item, idx) => `
+                                <li class="${item.done ? 'checked-item' : ''}">
+                                    <input type="checkbox" ${item.done ? 'checked' : ''} onchange="toggleItemDone(${order.id}, ${idx})">
+                                    ${item.name}
+                                </li>
+                            `).join('')}
+                        </ul>
+                        <button class="card-action-btn" onclick="moveOrder(${order.id}, 'listo')">Finalizar</button>
+                    `;
+                    colPrep.appendChild(card);
+                } 
+                else if (order.status === 'listo') {
+                    countReady++;
+                    const card = document.createElement('div');
+                    card.className = 'order-card';
+                    card.innerHTML = `
+                        <div class="card-meta">
+                            <span class="card-id">#${order.id}</span>
+                            <span class="card-timer">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                                ${order.time}
+                            </span>
+                        </div>
+                        <div class="card-table">${order.table}</div>
+                        <div class="status-badge-text">Listo para entregar/pagar</div>
+                        <button class="card-action-btn secondary" onclick="moveOrder(${order.id}, 'unpaid')">Enviar a Caja</button>
+                    `;
+                    colReady.appendChild(card);
                 }
             });
-            if (tabName === 'logs') renderAuditLogs();
-            if (tabName === 'menu') renderMenuMaintainer();
-            if (tabName === 'caja') renderCajaPanel();
+
+            document.getElementById('count-new').innerText = countNew;
+            document.getElementById('count-prep').innerText = countPrep;
+            document.getElementById('count-ready').innerText = countReady;
         }
 
-        function renderCajaPanel() {
-            const tbody = document.getElementById('admin-caja-table-body');
-            tbody.innerHTML = '';
-
-            // Mostrar órdenes con estado "Listo" o "Pagado" para control de flujo de caja
-            const checkoutQueue = state.orders.filter(o => o.status === 'Listo');
-            
-            // Estadísticas en tiempo real de la caja
-            const pagados = state.orders.filter(o => o.status === 'Pagado');
-            const totalRecaudado = pagados.reduce((acc, curr) => acc + curr.total, 0);
-
-            document.getElementById('stats-total-recaudado').innerText = `$${totalRecaudado.toFixed(2)}`;
-            document.getElementById('stats-pedidos-pagados').innerText = pagados.length;
-            document.getElementById('stats-pedidos-listos').innerText = checkoutQueue.length;
-
-            if (checkoutQueue.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--text-muted);">No hay pedidos en cola listos para pago.</td></tr>`;
-                return;
-            }
-
-            checkoutQueue.forEach(o => {
-                const tr = document.createElement('tr');
-                const detail = o.items.map(i => `${i.qty}x ${i.name}`).join(', ');
-
-                tr.innerHTML = `
-                    <td><strong>#${o.id}</strong></td>
-                    <td>${o.table}</td>
-                    <td>${detail}</td>
-                    <td><strong>$${o.total.toFixed(2)}</strong></td>
-                    <td><span class="badge badge-listo">Listo</span></td>
-                    <td>
-                        <button class="btn btn-success" style="padding: 4px 10px; font-size: 0.8rem; width:auto;" onclick="payOrder(${o.id})">💰 Registrar Pago</button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-
-        function payOrder(orderId) {
-            const index = state.orders.findIndex(o => o.id === orderId);
-            if (index === -1) return;
-
-            state.orders[index].status = 'Pagado';
-            saveStateToStorage();
-
-            addAuditLog(
-                state.currentUser ? state.currentUser.rut : "MOCK_CASHIER", 
-                state.currentUser ? state.currentUser.role : "Cajero/Admin", 
-                `Registró Pago y Boleta para comanda #${orderId}`
-            );
-
-            showToast(`Pedido #${orderId} pagado con éxito`, "success");
-            renderCajaPanel();
-            renderWaiterOrders();
-        }
-
-        /* LÓGICA DE CIERRE DE CAJA */
-        function triggerCierreCaja() {
-            const pagados = state.orders.filter(o => o.status === 'Pagado');
-            const anulados = state.orders.filter(o => o.status === 'Anulado');
-            const totalRecaudado = pagados.reduce((acc, curr) => acc + curr.total, 0);
-
-            document.getElementById('cierre-operador').innerText = state.currentUser ? `${state.currentUser.name} (${state.currentUser.role})` : "Operador General";
-            document.getElementById('cierre-fecha').innerText = new Date().toLocaleString();
-            document.getElementById('cierre-cant-pedidos').innerText = pagados.length;
-            document.getElementById('cierre-venta-total').innerText = `$${totalRecaudado.toFixed(2)}`;
-            document.getElementById('cierre-cant-anulados').innerText = anulados.length;
-
-            // Desglose de popularidad de artículos vendidos
-            const itemCounts = {};
-            pagados.forEach(order => {
-                order.items.forEach(item => {
-                    itemCounts[item.name] = (itemCounts[item.name] || 0) + item.qty;
-                });
-            });
-
-            const desgloseContainer = document.getElementById('cierre-desglose');
-            desgloseContainer.innerHTML = '';
-            
-            if (Object.keys(itemCounts).length === 0) {
-                desgloseContainer.innerHTML = `<span style="color:var(--text-muted); font-size:0.85rem;">No se registraron ventas de productos.</span>`;
-            } else {
-                const list = document.createElement('ul');
-                list.style.paddingLeft = '16px';
-                for (const [prodName, qty] of Object.entries(itemCounts)) {
-                    const li = document.createElement('li');
-                    li.innerHTML = `<strong>${qty}</strong> unidades de <strong>${prodName}</strong>`;
-                    list.appendChild(li);
-                }
-                desgloseContainer.appendChild(list);
-            }
-
-            document.getElementById('close-cash-modal').style.display = 'flex';
-        }
-
-        function confirmResetCaja() {
-            if (confirm("🚨 ATENCIÓN: Al confirmar el Cierre de Caja se archivarán los pedidos pagados y anulados del día, reiniciando la venta del sistema a $0.00. ¿Desea proceder?")) {
-                
-                addAuditLog(
-                    state.currentUser ? state.currentUser.rut : "SYSTEM", 
-                    "Administrador", 
-                    "EJECUTÓ CIERRE DE JORNADA Y REINICIO DE CAJA"
-                );
-
-                // Filtrar comandas vigentes (no terminadas) para que no se pierdan si se realiza un cierre
-                state.orders = state.orders.filter(o => o.status !== 'Pagado' && o.status !== 'Anulado');
-                saveStateToStorage();
-
-                document.getElementById('close-cash-modal').style.display = 'none';
-                showToast("Cierre de Caja ejecutado con éxito. Jornada reseteada.", "warning");
-                
-                renderCajaPanel();
-                renderWaiterOrders();
-                renderAuditLogs();
-            }
-        }
-
-        /* MANTENEDOR DEL MENÚ (CAMBIOS DE PRECIO E INVENTARIO EN CALIENTE) */
-        function renderMenuMaintainer() {
-            const container = document.getElementById('admin-menu-list');
+        function renderCashier() {
+            const container = document.getElementById('cashier-unpaid-container');
             container.innerHTML = '';
 
-            state.menu.forEach(p => {
-                const item = document.createElement('div');
-                item.className = 'menu-maintainer-item';
-                item.innerHTML = `
-                    <div style="flex: 1; min-width: 150px;">
-                        <strong>${p.name}</strong>
-                        <div style="font-size:0.8rem; color:var(--text-muted);">${p.category}</div>
+            const unpaidOrders = orders.filter(o => o.status === 'unpaid');
+
+            unpaidOrders.forEach(order => {
+                const itemSummary = order.items.map(i => i.name.split('x ')[1] || i.name).join(', ');
+                const card = document.createElement('div');
+                card.className = `unpaid-card ${selectedOrderForPayment && selectedOrderForPayment.id === order.id ? 'selected' : ''}`;
+                card.onclick = () => selectOrderForPayment(order);
+                card.innerHTML = `
+                    <div>
+                        <span class="unpaid-card-tag">${order.table}</span><span class="unpaid-card-id">#ORD-${order.id}</span>
+                        <div class="unpaid-card-items">${itemSummary.length > 35 ? itemSummary.substring(0, 35) + '...' : itemSummary}</div>
+                    </div>
+                    <div class="unpaid-card-price">$${order.price.toFixed(2)}</div>
+                `;
+                container.appendChild(card);
+            });
+
+            // Actualizar Totales de Barra Inferior
+            document.getElementById('box-total').innerHTML = `$${totalSales.toFixed(2)} <span id="box-transactions">(${transactionsCount} transacciones)</span>`;
+            
+            renderPaymentDetailPane();
+        }
+
+        function renderPaymentDetailPane() {
+            const pane = document.getElementById('payment-process-pane');
+            if (!selectedOrderForPayment || selectedOrderForPayment.status !== 'unpaid') {
+                pane.innerHTML = `
+                    <div class="payment-empty-state">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                        <p>Select an order to process payment</p>
+                    </div>
+                `;
+                return;
+            }
+
+            pane.innerHTML = `
+                <div class="payment-details-container">
+                    <div>
+                        <h3 class="pane-title" style="margin-bottom:4px;">Procesar Pago #ORD-${selectedOrderForPayment.id}</h3>
+                        <p style="font-size:13px; color:#7A6E67; margin-bottom:24px;">Ubicación: ${selectedOrderForPayment.table}</p>
+                        
+                        <div class="bill-header">
+                            <span style="font-size:12px; font-weight:700; color:#554A42; text-transform:uppercase;">Detalle de Consumo</span>
+                        </div>
+                        
+                        ${selectedOrderForPayment.items.map(item => `
+                            <div class="bill-row">
+                                <span>${item.name}</span>
+                                <span>--</span>
+                            </div>
+                        `).join('')}
+                        
+                        <div class="bill-total-row">
+                            <span>Total a Pagar</span>
+                            <span>$${selectedOrderForPayment.price.toFixed(2)}</span>
+                        </div>
                     </div>
                     
-                    <div style="display: flex; gap: 8px; align-items: center; min-width: 150px;">
-                        <label for="price-${p.id}" class="sr-only">Precio de ${p.name}</label>
-                        <span style="font-size: 0.9rem;">$</span>
-                        <input type="number" id="price-${p.id}" class="form-control" style="width: 90px; padding: 6px; display: inline-block;" step="0.01" value="${p.price.toFixed(2)}" onchange="updateProductPrice(${p.id}, this.value)">
-                    </div>
-
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <span style="font-size: 0.9rem;">${p.available ? '🟢 Disponible' : '🔴 Agotado / Ocultar'}</span>
-                        <label class="switch">
-                            <input type="checkbox" ${p.available ? 'checked' : ''} onchange="toggleProductAvailability(${p.id}, this.checked)">
-                            <span class="slider"></span>
-                        </label>
-                    </div>
-                `;
-                container.appendChild(item);
-            });
-        }
-
-        function updateProductPrice(productId, newPrice) {
-            const priceVal = parseFloat(newPrice);
-            if (isNaN(priceVal) || priceVal < 0) {
-                alert("Precio inválido");
-                renderMenuMaintainer();
-                return;
-            }
-
-            const pIndex = state.menu.findIndex(p => p.id === productId);
-            if (pIndex === -1) return;
-
-            const oldPrice = state.menu[pIndex].price;
-            state.menu[pIndex].price = priceVal;
-            saveStateToStorage();
-
-            addAuditLog(
-                state.currentUser ? state.currentUser.rut : "MOCK_ADMIN", 
-                "Administrador", 
-                `Actualizó precio de '${state.menu[pIndex].name}' de $${oldPrice.toFixed(2)} a $${priceVal.toFixed(2)}`
-            );
-
-            showToast(`Precio actualizado para ${state.menu[pIndex].name}`, "success");
-            renderWaiterMenu();
-        }
-
-        function toggleProductAvailability(productId, isAvailable) {
-            const pIndex = state.menu.findIndex(p => p.id === productId);
-            if (pIndex === -1) return;
-
-            state.menu[pIndex].available = isAvailable;
-            saveStateToStorage();
-
-            addAuditLog(
-                state.currentUser ? state.currentUser.rut : "MOCK_ADMIN", 
-                "Administrador", 
-                `${isAvailable ? 'Habilitó' : 'Ocultó / Deshabilitó por Agotado'} el producto '${state.menu[pIndex].name}'`
-            );
-
-            showToast(`${state.menu[pIndex].name} se encuentra ${isAvailable ? 'Disponible' : 'Agotado (Menú Bloqueado)'}`, "warning");
-            renderWaiterMenu();
-        }
-
-        /* AUDITORÍA Y SEGURIDAD (LOGS) */
-        function addAuditLog(rut, role, action) {
-            const logEntry = {
-                timestamp: new Date().toLocaleString(),
-                rut,
-                role,
-                action
-            };
-            state.logs.unshift(logEntry); // Insertar al inicio para visualización inmediata
-            
-            // Mantener un límite de hasta 500 logs para resiliencia de hardware de 2GB RAM
-            if (state.logs.length > 500) {
-                state.logs.pop();
-            }
-            saveStateToStorage();
-        }
-
-        function renderAuditLogs() {
-            const tbody = document.getElementById('audit-logs-table-body');
-            tbody.innerHTML = '';
-
-            if (state.logs.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--text-muted);">Sin logs registrados en esta sesión.</td></tr>`;
-                return;
-            }
-
-            state.logs.forEach(l => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td style="font-family:monospace; font-size:0.85rem; color:var(--text-muted);">${l.timestamp}</td>
-                    <td><strong>${l.rut}</strong></td>
-                    <td><span class="badge" style="background:#475569; color:#fff;">${l.role}</span></td>
-                    <td style="color:#f1f5f9; font-weight:500;">${l.action}</td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-
-        function clearAuditLogs() {
-            if (confirm("¿Seguro de vaciar el historial de auditoría técnica?")) {
-                state.logs = [];
-                saveStateToStorage();
-                renderAuditLogs();
-            }
-        }
-
-        /* ==========================================================================
-           COMPONENTE DE NOTIFICACIÓN FLOTANTE (TOAST)
-           ========================================================================== */
-        function showToast(message, type = 'info', duration = 4000) {
-            const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            toast.className = `toast toast-${type}`;
-            toast.setAttribute('role', 'alert');
-            toast.innerHTML = `
-                <div style="flex: 1; padding-right: 12px; font-weight: 500;">${message}</div>
-                <button onclick="this.parentElement.remove()" style="background:none; border:none; color:inherit; font-weight:bold; cursor:pointer;" aria-label="Cerrar notificación">X</button>
+                    <button class="btn-login" style="margin-top:24px; background-color:var(--sidebar-bg);" onclick="processPayment(${selectedOrderForPayment.id})">
+                        Registrar Pago Exitoso
+                    </button>
+                </div>
             `;
-            container.appendChild(toast);
-
-            setTimeout(() => {
-                if (toast.parentElement) {
-                    toast.remove();
-                }
-            }, duration);
         }
 
-        /* ==========================================================================
-           SIMULACIÓN DE PRUEBA DE CARGA (50 PEDIDOS CONCURRENTES)
-           ========================================================================== */
-        function loadPerformanceMocks() {
-            // Generar 50 órdenes aleatorias con estados diversos para probar robustez en hardware de bajo costo (2GB RAM)
-            const mesas = ["Mesa 1", "Mesa 2", "Mesa 3", "Mesa 4", "Mesa 5", "Mesa 6", "Llevar"];
-            const estados = ["Pendiente", "En preparación", "Listo"];
-            const nombresComunes = ["Andrés", "Camila", "Felipe", "Marta", "Gonzalo"];
-            
-            for (let i = 0; i < 50; i++) {
-                const numItems = Math.floor(Math.random() * 3) + 1;
-                const parsedItems = [];
-                let subtotal = 0;
-
-                for (let j = 0; j < numItems; j++) {
-                    const prod = state.menu[Math.floor(Math.random() * state.menu.length)];
-                    const qty = Math.floor(Math.random() * 2) + 1;
-                    parsedItems.push({
-                        id: prod.id,
-                        name: prod.name,
-                        price: prod.price,
-                        qty: qty
-                    });
-                    subtotal += prod.price * qty;
-                }
-
-                // Distribución temporal simulada para cascada FIFO en cocina (hasta 2 horas atrás)
-                const mockTime = new Date(Date.now() - Math.floor(Math.random() * 7200000)).toISOString();
-
-                state.orders.push({
-                    id: 2000 + i,
-                    table: mesas[Math.floor(Math.random() * mesas.length)],
-                    items: parsedItems,
-                    status: estados[Math.floor(Math.random() * estados.length)],
-                    timestamp: mockTime,
-                    total: subtotal,
-                    createdBy: nombresComunes[Math.floor(Math.random() * nombresComunes.length)]
-                });
+        // Lógica de Movimiento Transaccional de Estados
+        function moveOrder(id, nextStatus) {
+            const order = orders.find(o => o.id === id);
+            if (order) {
+                order.status = nextStatus;
+                saveState();
+                renderAll();
             }
-
-            saveStateToStorage();
-            
-            addAuditLog(
-                "TESTER-112", 
-                "Prueba de Sistema", 
-                "Inyección exitosa de 50 pedidos concurrentes para validación de latencia."
-            );
-
-            showToast("🚀 Éxito: 50 Pedidos concurrentes inyectados en la memoria del navegador.", "success");
-            
-            // Re-renderizar todo
-            renderWaiterOrders();
-            renderKitchenOrders();
-            renderCajaPanel();
-            renderAuditLogs();
         }
 
-        // Ejecutar Inicialización
-        window.onload = initSystem;
+        function toggleItemDone(orderId, itemIdx) {
+            const order = orders.find(o => o.id === orderId);
+            if (order && order.items[itemIdx]) {
+                order.items[itemIdx].done = !order.items[itemIdx].done;
+                saveState();
+                renderKitchen();
+            }
+        }
+
+        function selectOrderForPayment(order) {
+            selectedOrderForPayment = order;
+            renderCashier();
+        }
+
+        function processPayment(id) {
+            const order = orders.find(o => o.id === id);
+            if (order) {
+                order.status = 'pagado';
+                totalSales += order.price;
+                transactionsCount++;
+                selectedOrderForPayment = null;
+                saveState();
+                renderAll();
+            }
+        }
+
+        // Lógica de Modales Operativos
+        function openCierreModal() {
+            const modal = document.getElementById('cierre-modal');
+            const body = document.getElementById('cierre-modal-body');
+            
+            body.innerHTML = `
+                <div style="background:#FAF6F2; padding:16px; border-radius:6px; margin-bottom:16px; border:1px solid var(--border-color)">
+                    <strong>Ventas Totales:</strong> $${totalSales.toFixed(2)}<br>
+                    <strong>Transacciones Realizadas:</strong> ${transactionsCount}<br>
+                    <strong>Órdenes en Cola Pendiente:</strong> ${orders.filter(o => o.status !== 'pagado').length}
+                </div>
+                <p>Al confirmar el cierre de caja, se consolidará el balance financiero de la jornada operativa actual y se archivará el historial transaccional en el log local.</p>
+            `;
+            modal.style.display = 'flex';
+        }
+
+        function closeCierreModal() {
+            document.getElementById('cierre-modal').style.display = 'none';
+        }
+
+        function executeCierreCompleto() {
+            totalSales = 0;
+            transactionsCount = 0;
+            orders = orders.filter(o => o.status !== 'pagado'); // Limpieza preventiva de pagados
+            saveState();
+            closeCierreModal();
+            renderAll();
+            alert('Cierre de caja ejecutado con éxito. Balance reiniciado para el siguiente turno.');
+        }
     </script>
 </body>
 </html>
