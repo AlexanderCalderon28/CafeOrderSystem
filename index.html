@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CafeOrder System - Prototipo de Alta Fidelidad</title>
+    <title>CafeOrder System - Prototipo Final Integrado</title>
     <style>
         /* ==========================================================================
            VARIABLES Y DISEÑO ADAPTATIVO (PALETA STITCH: VERDE, CAFÉ, BLANCO)
@@ -129,9 +129,8 @@
         /* ==========================================================================
            VISTA 1: INICIO DE SESIÓN
            ========================================================================== */
-        /* Contenedor padre modificado para centrar vertical y horizontalmente */
         #view-login {
-            display: flex !important; /* Forzado a flex para centrar contenido */
+            /* Corregido: Se elimina !important para que JS pueda ocultarlo */
             min-height: calc(100vh - 160px);
             align-items: center;
             justify-content: center;
@@ -238,12 +237,33 @@
         .responsive-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
         .responsive-table th, .responsive-table td { padding: 10px; border-bottom: 1px solid var(--border-color); text-align: left; }
         .responsive-table th { background: #FDFBF9; }
+
+        /* ==========================================================================
+           ARQUITECTURA SPA (ESTILOS NUEVOS PARA ESTRUCTURA STITCH)
+           ========================================================================== */
+        #app-layout {
+            display: none; 
+            grid-template-columns: 240px 1fr;
+            min-height: calc(100vh - 40px);
+        }
+        
+        aside { background-color: #2B1A11; display: flex; flex-direction: column; padding: 24px 16px; color: #FFFFFF; }
+        .brand-title { font-size: 22px; font-weight: 700; line-height: 1.2; margin-bottom: 32px; padding-left: 8px; color: #FFFFFF; }
+        
+        .nav-item {
+            display: flex; align-items: center; padding: 12px 14px; color: #A3968E;
+            border-radius: 8px; cursor: pointer; margin-bottom: 8px; font-weight: 500; font-size: 0.9rem;
+        }
+        .nav-item.active { background-color: #E5E7D6; color: #2B1A11; font-weight: 600; }
+        .nav-item:hover:not(.active) { color: #FFF; background-color: rgba(255,255,255,0.05); }
+
     </style>
 </head>
 <body>
 
     <a href="#main-content" class="skip-link">Saltar al contenido principal</a>
 
+    <!-- BARRA DE CONTROL DEL EVALUADOR (PROFESOR / TESTEO GLOBAL) -->
     <div class="evaluator-bar" aria-label="Controles de simulación de pruebas">
         <div>
             <strong>Simulador de Evaluación:</strong> Permite probar las interfaces sin perder la persistencia de datos local.
@@ -253,229 +273,267 @@
             <button class="btn-evaluator" onclick="switchGlobalView('waiter')" id="eval-waiter">2. Garzón</button>
             <button class="btn-evaluator" onclick="switchGlobalView('kitchen')" id="eval-kitchen">3. Barista (Cocina)</button>
             <button class="btn-evaluator" onclick="switchGlobalView('admin')" id="eval-admin">4. Admin & Caja</button>
-            <button class="btn-evaluator" onclick="loadPerformanceMocks()" style="background-color: #047857; border-color: #059669; color: white;">⚡ Inyectar 50 Pedidos (Prueba de Carga)</button>
+            <button class="btn-evaluator" onclick="loadPerformanceMocks()" style="background-color: #047857; border-color: #059669;">⚡ Inyectar 50 Pedidos (Prueba de Carga)</button>
         </div>
     </div>
 
-    <header>
+    <!-- CABECERA GENERAL (VISIBLE EN MÓVIL O VISTAS ESPECÍFICAS) -->
+    <header id="main-header" style="display: none;">
         <div class="header-top">
             <div class="system-title">
                 ☕ CafeOrder System
                 <span style="font-size: 0.8rem; background-color: #ef4444; color: white; padding: 2px 8px; border-radius: 4px; font-weight: bold; letter-spacing: 1px;">MODO LOCAL</span>
             </div>
             <div class="session-info" id="session-display">
+                <!-- Se inyecta dinámicamente -->
                 <span>Sin sesión activa</span>
             </div>
         </div>
     </header>
 
-    <main class="container" id="main-content">
-        
-        <section id="view-login" style="display: none;">
-            <div class="login-card">
-                <h2>Control de Acceso</h2>
-                <div class="login-error" id="login-error-msg" role="alert" aria-live="polite"></div>
+    <!-- VISTA 1: INICIO DE SESIÓN -->
+    <section id="view-login" style="display: none;">
+        <div class="login-card">
+            <h2>Control de Acceso</h2>
+            <div class="login-error" id="login-error-msg" role="alert" aria-live="polite"></div>
+            
+            <form id="login-form" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label for="login-rut">RUT del Usuario (Formato 12.345.678-9)</label>
+                    <input type="text" id="login-rut" class="form-control" placeholder="12.345.678-9" required autocomplete="username">
+                </div>
+                <div class="form-group">
+                    <label for="login-pass">Contraseña</label>
+                    <input type="password" id="login-pass" class="form-control" required autocomplete="current-password">
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Ingresar al Sistema</button>
+            </form>
+
+            <div class="quick-credentials">
+                <strong>Credenciales de Prueba (RUT válido):</strong>
+                <table>
+                    <tr>
+                        <td><strong>Garzón:</strong></td>
+                        <td>RUT: <code>11.111.111-1</code></td>
+                        <td>Clave: <code>garzon123</code></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Cocina:</strong></td>
+                        <td>RUT: <code>22.222.222-2</code></td>
+                        <td>Clave: <code>cocina123</code></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Admin:</strong></td>
+                        <td>RUT: <code>33.333.333-3</code></td>
+                        <td>Clave: <code>admin123</code></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- ARQUITECTURA PRINCIPAL SPA (SIDEBAR + MAIN) -->
+    <div id="app-layout">
+        <aside>
+            <div>
+                <div class="brand-title">Sistema<br>CafeOrder</div>
+                <ul style="list-style: none;">
+                    <li class="nav-item" id="nav-waiter" onclick="switchGlobalView('waiter')">📝 Salón (Garzón)</li>
+                    <li class="nav-item" id="nav-kitchen" onclick="switchGlobalView('kitchen')">👨‍🍳 Cocina (Kanban)</li>
+                    <li class="nav-item" id="nav-admin" onclick="switchGlobalView('admin')">⚙️ Panel Admin y Caja</li>
+                </ul>
+            </div>
+            <div style="border-top: 1px solid #42281A; padding-top: 16px;">
+                <button class="btn" style="width: 100%; background: #FFE3E1; color: #8A1F1F;" onclick="handleLogout(false)">Cerrar Sesión</button>
+            </div>
+        </aside>
+
+        <main id="main-content" style="padding: 24px; overflow-y: auto;">
+            
+            <!-- VISTA 2: INTERFAZ DEL GARZÓN -->
+            <section id="view-waiter" style="display: none;">
+                <h2 style="margin-bottom: 16px;">Gestión de Pedidos en Salón</h2>
                 
-                <form id="login-form" onsubmit="handleLogin(event)">
-                    <div class="form-group">
-                        <label for="login-rut">RUT del Usuario (Formato 12.345.678-9)</label>
-                        <input type="text" id="login-rut" class="form-control" placeholder="12.345.678-9" required autocomplete="username">
-                    </div>
-                    <div class="form-group">
-                        <label for="login-pass">Contraseña</label>
-                        <input type="password" id="login-pass" class="form-control" required autocomplete="current-password">
-                    </div>
-                    <button type="submit" class="btn btn-primary" style="width: 100%;">Ingresar al Sistema</button>
-                </form>
-
-                <div class="quick-credentials">
-                    <strong>Credenciales de Prueba (RUT válido):</strong>
-                    <table>
-                        <tr>
-                            <td><strong>Garzón:</strong></td>
-                            <td>RUT: <code>11.111.111-1</code></td>
-                            <td>Clave: <code>garzon123</code></td>
-                        </tr>
-                        <tr>
-                            <td><strong>Cocina:</strong></td>
-                            <td>RUT: <code>22.222.222-2</code></td>
-                            <td>Clave: <code>cocina123</code></td>
-                        </tr>
-                        <tr>
-                            <td><strong>Admin:</strong></td>
-                            <td>RUT: <code>33.333.333-3</code></td>
-                            <td>Clave: <code>admin123</code></td>
-                        </tr>
-                    </table>
-                </div>
-            </div>
-        </section>
-
-        <section id="view-waiter" style="display: none;">
-            <h2 style="margin-bottom: 16px;">Gestión de Pedidos en Salón</h2>
-            
-            <div class="waiter-layout">
-                <div>
-                    <div class="category-tabs" id="category-tabs" role="tablist" aria-label="Categorías de menú">
+                <div class="waiter-layout">
+                    <!-- Sección Izquierda: Catálogo -->
+                    <div>
+                        <div class="category-tabs" id="category-tabs" role="tablist" aria-label="Categorías de menú">
+                            <!-- Generado dinámicamente -->
                         </div>
-                    
-                    <div class="products-grid" id="products-grid">
+                        
+                        <div class="products-grid" id="products-grid">
+                            <!-- Productos generados dinámicamente -->
                         </div>
+                    </div>
+
+                    <!-- Sección Derecha: Comanda Actual -->
+                    <div class="cart-card">
+                        <h3 id="comanda-title">Nueva Comanda</h3>
+                        <div class="form-group" style="margin-top: 12px;">
+                            <label for="table-select">Asignar Mesa *</label>
+                            <select id="table-select" class="form-control" required>
+                                <option value="">Seleccione Mesa...</option>
+                                <option value="Mesa 1">Mesa 1</option>
+                                <option value="Mesa 2">Mesa 2</option>
+                                <option value="Mesa 3">Mesa 3</option>
+                                <option value="Mesa 4">Mesa 4</option>
+                                <option value="Mesa 5">Mesa 5</option>
+                                <option value="Mesa 6">Mesa 6</option>
+                                <option value="Llevar">Para Llevar</option>
+                            </select>
+                        </div>
+
+                        <div class="cart-items" id="cart-items">
+                            <div style="text-align: center; color: var(--text-muted); padding: 20px 0;">Comanda vacía. Seleccione productos del menú.</div>
+                        </div>
+
+                        <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 1.25rem; margin-bottom: 16px; border-top: 1px solid var(--border-color); padding-top: 12px;">
+                            <span>Subtotal:</span>
+                            <span id="cart-subtotal">$0.00</span>
+                        </div>
+
+                        <button class="btn btn-success" style="width: 100%;" onclick="submitOrder()">
+                            📥 Confirmar / Enviar Comanda
+                        </button>
+                        <button class="btn btn-danger" id="btn-cancel-edit" style="width: 100%; margin-top: 8px; display: none;" onclick="cancelEditingState()">
+                            Cancelar Edición
+                        </button>
+                    </div>
                 </div>
 
-                <div class="cart-card">
-                    <h3 id="comanda-title">Nueva Comanda</h3>
-                    <div class="form-group" style="margin-top: 12px;">
-                        <label for="table-select">Asignar Mesa *</label>
-                        <select id="table-select" class="form-control" required>
-                            <option value="">Seleccione Mesa...</option>
-                            <option value="Mesa 1">Mesa 1</option>
-                            <option value="Mesa 2">Mesa 2</option>
-                            <option value="Mesa 3">Mesa 3</option>
-                            <option value="Mesa 4">Mesa 4</option>
-                            <option value="Mesa 5">Mesa 5</option>
-                            <option value="Mesa 6">Mesa 6</option>
-                            <option value="Llevar">Para Llevar</option>
-                        </select>
-                    </div>
-
-                    <div class="cart-items" id="cart-items">
-                        <div style="text-align: center; color: var(--text-muted); padding: 20px 0;">Comanda vacía. Seleccione productos del menú.</div>
-                    </div>
-
-                    <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 1.25rem; margin-bottom: 16px; border-top: 1px solid var(--border-color); padding-top: 12px;">
-                        <span>Subtotal:</span>
-                        <span id="cart-subtotal">$0.00</span>
-                    </div>
-
-                    <button class="btn btn-success" style="width: 100%;" onclick="submitOrder()">
-                        📥 Confirmar / Enviar Comanda
-                    </button>
-                    <button class="btn btn-danger" id="btn-cancel-edit" style="width: 100%; margin-top: 8px; display: none;" onclick="cancelEditingState()">
-                        Cancelar Edición
-                    </button>
-                </div>
-            </div>
-
-            <div class="waiter-orders">
-                <h3>Monitoreo y Edición de Pedidos (Salón)</h3>
-                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 10px;">
-                    * Regla de Negocio: Modificación o anulación únicamente en estado <strong>Pendiente</strong>.
-                </p>
-                <div class="audit-table-wrapper">
-                    <table class="audit-table">
-                        <thead>
-                            <tr>
-                                <th>Nº Pedido</th>
-                                <th>Mesa</th>
-                                <th>Detalle</th>
-                                <th>Total</th>
-                                <th>Estado</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody id="waiter-orders-table-body">
+                <!-- Listado de comandas puestas por el garzón para edición o anulación -->
+                <div class="waiter-orders">
+                    <h3>Monitoreo y Edición de Pedidos (Salón)</h3>
+                    <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 10px;">
+                        * Regla de Negocio: Modificación o anulación únicamente en estado <strong>Pendiente</strong>.
+                    </p>
+                    <div class="audit-table-wrapper">
+                        <table class="audit-table">
+                            <thead>
+                                <tr>
+                                    <th>Nº Pedido</th>
+                                    <th>Mesa</th>
+                                    <th>Detalle</th>
+                                    <th>Total</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="waiter-orders-table-body">
+                                <!-- Inyectado por JS -->
                             </tbody>
-                    </table>
-                </div>
-            </div>
-        </section>
-
-        <section id="view-kitchen" style="display: none;">
-            <div class="kitchen-header">
-                <h2>Pantalla de Cocina / Barista (Kanban FIFO)</h2>
-                <div>
-                    <span class="badge badge-pendiente" style="padding: 6px 12px; font-size: 0.85rem;">Orden cronológico: Más antiguo primero</span>
-                </div>
-            </div>
-
-            <div class="kitchen-grid" id="kitchen-kanban-board">
-                </div>
-        </section>
-
-        <section id="view-admin" style="display: none;">
-            <h2>Administración Centralizada</h2>
-            
-            <div class="admin-tabs">
-                <button class="admin-tab-btn active" onclick="switchAdminTab('caja')" id="tab-caja">Panel de Caja (Cierre diario)</button>
-                <button class="admin-tab-btn" onclick="switchAdminTab('menu')" id="tab-menu">Mantenimiento de Menú</button>
-                <button class="admin-tab-btn" onclick="switchAdminTab('logs')" id="tab-logs">Auditoría (Logs de Seguridad)</button>
-            </div>
-
-            <div id="admin-caja-sec">
-                <div class="dashboard-stats">
-                    <div class="stat-card">
-                        <h3>Ventas Acumuladas Hoy</h3>
-                        <p class="stat-val" id="stats-total-recaudado">$0.00</p>
+                        </table>
                     </div>
-                    <div class="stat-card">
-                        <h3>Pedidos Pagados</h3>
-                        <p class="stat-val" id="stats-pedidos-pagados" style="color: var(--primary);">0</p>
-                    </div>
-                    <div class="stat-card">
-                        <h3>Pendientes de Pago</h3>
-                        <p class="stat-val" id="stats-pedidos-listos" style="color: var(--warning);">0</p>
+                </div>
+            </section>
+
+            <!-- VISTA 3: PANTALLA DE COCINA (FIFO) -->
+            <section id="view-kitchen" style="display: none;">
+                <div class="kitchen-header">
+                    <h2>Pantalla de Cocina / Barista (Kanban FIFO)</h2>
+                    <div>
+                        <span class="badge badge-pendiente" style="padding: 6px 12px; font-size: 0.85rem;">Orden cronológico: Más antiguo primero</span>
                     </div>
                 </div>
 
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                    <h3>Cobro de Pedidos Entregados</h3>
-                    <button class="btn btn-warning" onclick="triggerCierreCaja()">🔒 Ejecutar Cierre de Caja</button>
+                <div class="kitchen-grid" id="kitchen-kanban-board">
+                    <!-- Tarjetas de órdenes dinámicas -->
+                </div>
+            </section>
+
+            <!-- VISTA 4: ADMINISTRADOR Y CAJA -->
+            <section id="view-admin" style="display: none;">
+                <h2>Administración Centralizada</h2>
+                
+                <div class="admin-tabs">
+                    <button class="admin-tab-btn active" onclick="switchAdminTab('caja')" id="tab-caja">Panel de Caja (Cierre diario)</button>
+                    <button class="admin-tab-btn" onclick="switchAdminTab('menu')" id="tab-menu">Mantenimiento de Menú</button>
+                    <button class="admin-tab-btn" onclick="switchAdminTab('logs')" id="tab-logs">Auditoría (Logs de Seguridad)</button>
                 </div>
 
-                <div class="audit-table-wrapper">
-                    <table class="audit-table">
-                        <thead>
-                            <tr>
-                                <th>Pedido</th>
-                                <th>Mesa</th>
-                                <th>Detalle</th>
-                                <th>Subtotal</th>
-                                <th>Estado</th>
-                                <th>Acción</th>
-                            </tr>
-                        </thead>
-                        <tbody id="admin-caja-table-body">
+                <!-- Pestaña 4a: Panel de Caja -->
+                <div id="admin-caja-sec">
+                    <div class="dashboard-stats">
+                        <div class="stat-card">
+                            <h3>Ventas Acumuladas Hoy</h3>
+                            <p class="stat-val" id="stats-total-recaudado">$0.00</p>
+                        </div>
+                        <div class="stat-card">
+                            <h3>Pedidos Pagados</h3>
+                            <p class="stat-val" id="stats-pedidos-pagados" style="color: var(--primary);">0</p>
+                        </div>
+                        <div class="stat-card">
+                            <h3>Pendientes de Pago</h3>
+                            <p class="stat-val" id="stats-pedidos-listos" style="color: var(--warning);">0</p>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                        <h3>Cobro de Pedidos Entregados</h3>
+                        <button class="btn btn-warning" onclick="triggerCierreCaja()">🔒 Ejecutar Cierre de Caja</button>
+                    </div>
+
+                    <div class="audit-table-wrapper">
+                        <table class="audit-table">
+                            <thead>
+                                <tr>
+                                    <th>Pedido</th>
+                                    <th>Mesa</th>
+                                    <th>Detalle</th>
+                                    <th>Subtotal</th>
+                                    <th>Estado</th>
+                                    <th>Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-caja-table-body">
+                                <!-- Inyectado por JS -->
                             </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div id="admin-menu-sec" style="display: none;">
-                <h3 style="margin-bottom: 12px;">Mantenimiento Diario de Precios e Inventario</h3>
-                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px;">
-                    Cualquier cambio de precio o estado "Agotado" se refleja inmediatamente en el menú digital del Garzón.
-                </p>
-                <div class="menu-maintainer-list" id="admin-menu-list">
+                        </table>
                     </div>
-            </div>
-
-            <div id="admin-logs-sec" style="display: none;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                    <h3>Historial de Auditoría de Seguridad</h3>
-                    <button class="btn btn-danger" style="padding: 4px 10px; font-size: 0.8rem;" onclick="clearAuditLogs()">Limpiar Logs</button>
                 </div>
-                <div class="audit-table-wrapper">
-                    <table class="audit-table">
-                        <thead>
-                            <tr>
-                                <th>Marca de Tiempo</th>
-                                <th>Usuario</th>
-                                <th>Rol</th>
-                                <th>Acción Crítica</th>
-                            </tr>
-                        </thead>
-                        <tbody id="audit-logs-table-body">
+
+                <!-- Pestaña 4b: Mantenimiento del Menú -->
+                <div id="admin-menu-sec" style="display: none;">
+                    <h3 style="margin-bottom: 12px;">Mantenimiento Diario de Precios e Inventario</h3>
+                    <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px;">
+                        Cualquier cambio de precio o estado "Agotado" se refleja inmediatamente en el menú digital del Garzón.
+                    </p>
+                    <div class="menu-maintainer-list" id="admin-menu-list">
+                        <!-- Productos administrados aquí -->
+                    </div>
+                </div>
+
+                <!-- Pestaña 4c: Logs de Auditoría -->
+                <div id="admin-logs-sec" style="display: none;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                        <h3>Historial de Auditoría de Seguridad</h3>
+                        <button class="btn btn-danger" style="padding: 4px 10px; font-size: 0.8rem;" onclick="clearAuditLogs()">Limpiar Logs</button>
+                    </div>
+                    <div class="audit-table-wrapper">
+                        <table class="audit-table">
+                            <thead>
+                                <tr>
+                                    <th>Marca de Tiempo</th>
+                                    <th>Usuario</th>
+                                    <th>Rol</th>
+                                    <th>Acción Crítica</th>
+                                </tr>
+                            </thead>
+                            <tbody id="audit-logs-table-body">
+                                <!-- Logs generados por JS -->
                             </tbody>
-                    </table>
+                        </table>
+                    </div>
                 </div>
-            </div>
-        </section>
+            </section>
 
-    </main>
+        </main>
+    </div>
 
+    <!-- CONTENEDOR DE NOTIFICACIONES TOAST (WebSocket simulado < 2s) -->
     <div class="toast-container" id="toast-container" aria-live="polite"></div>
 
+    <!-- MODAL POPUP PARA RESULTADOS DE CIERRE DE CAJA -->
     <div class="modal-overlay" id="close-cash-modal" style="display: none;">
         <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
             <h3 id="modal-title">Reporte Técnico de Cierre de Caja</h3>
@@ -488,8 +546,9 @@
                 <p><strong>Pedidos Anulados durante la jornada:</strong> <span id="cierre-cant-anulados">0</span></p>
                 
                 <h4 style="margin-top: 14px; margin-bottom: 6px;">Ventas por Producto:</h4>
-                <div id="cierre-desglose" style="background: var(--bg-main); padding: 8px; border-radius: 6px; max-height: 150px; overflow-y: auto; border: 1px solid var(--border-color);">
-                    </div>
+                <div id="cierre-desglose" style="background: var(--bg-main); padding: 8px; border-radius: 6px; max-height: 150px; overflow-y: auto;">
+                    <!-- Detalle por item -->
+                </div>
             </div>
             <div style="display: flex; gap: 8px; justify-content: flex-end;">
                 <button class="btn btn-primary" onclick="confirmResetCaja()">Confirmar y Resetear Jornada</button>
@@ -498,10 +557,11 @@
         </div>
     </div>
 
-    <div style="position: fixed; bottom: 0; left: 0; right: 0; background: #2B1A11; border-top: 2px solid #4E7C3A; padding: 8px 16px; display: flex; justify-content: space-between; align-items: center; z-index: 998; font-size: 0.8rem; color: #FFFFFF;">
+    <!-- CONTROL INFERIOR DE INACTIVIDAD (SIMULACIÓN AUTOMÁTICA) -->
+    <div style="position: fixed; bottom: 0; left: 0; right: 0; background: #2B1A11; border-top: 2px solid var(--primary); padding: 8px 16px; display: flex; justify-content: space-between; align-items: center; z-index: 998; font-size: 0.8rem; color: white;">
         <div id="inactivity-timer-display">⏱️ Autocierre de sesión en: 30:00 (Inactivo)</div>
         <div style="display: flex; gap: 8px;">
-            <button class="btn-evaluator" style="font-size: 0.75rem; padding: 4px 8px; background-color: var(--danger); border-color: var(--danger);" onclick="simulateInactivityTimeout()">Simular +30 Min de Inactividad</button>
+            <button class="btn-evaluator" style="font-size: 0.75rem; padding: 4px 8px; background-color: var(--danger);" onclick="simulateInactivityTimeout()">Simular +30 Min de Inactividad</button>
             <button class="btn-evaluator" style="font-size: 0.75rem; padding: 4px 8px;" onclick="resetInactivityTimer()">Actividad</button>
         </div>
     </div>
@@ -569,8 +629,6 @@
 
             // Renderizado inicial según sesión activa
             if (state.currentUser) {
-                // Modificación añadida por seguridad: en display flex el JS original sobreescribía con 'block'.
-                // Controlaremos esto dentro de switchGlobalView.
                 switchGlobalView(getRoleDefaultView(state.currentUser.role));
             } else {
                 switchGlobalView('login');
@@ -738,11 +796,12 @@
             const views = ['login', 'waiter', 'kitchen', 'admin'];
             views.forEach(v => {
                 const element = document.getElementById(`view-${v}`);
-                if (v === viewName) {
-                    // Para evitar romper el flexbox del login
-                    element.style.display = (v === 'login') ? 'flex' : 'block';
-                } else {
-                    element.style.display = 'none';
+                if (element) {
+                    if (v === viewName) {
+                        element.style.display = (v === 'login') ? 'flex' : 'block';
+                    } else {
+                        element.style.display = 'none';
+                    }
                 }
                 
                 const evalBtn = document.getElementById(`eval-${v}`);
@@ -750,7 +809,25 @@
                     if (v === viewName) evalBtn.classList.add('active');
                     else evalBtn.classList.remove('active');
                 }
+                
+                const navBtn = document.getElementById(`nav-${v}`);
+                if (navBtn) {
+                    if (v === viewName) navBtn.classList.add('active');
+                    else navBtn.classList.remove('active');
+                }
             });
+
+            // Control exacto de visualización de Sidebar y Header
+            const appLayout = document.getElementById('app-layout');
+            const mainHeader = document.getElementById('main-header');
+            
+            if (viewName === 'login') {
+                appLayout.style.display = 'none';
+                mainHeader.style.display = 'block'; // Mostrar solo header en login
+            } else {
+                appLayout.style.display = 'grid';
+                mainHeader.style.display = 'none'; // Ocultar header global, usar Sidebar
+            }
 
             // Forzar simulación de usuario si el evaluador navega directamente
             if (viewName !== 'login' && !state.currentUser) {
@@ -782,7 +859,6 @@
             if (state.currentUser) {
                 container.innerHTML = `
                     <span>👤 <strong>${state.currentUser.name}</strong> (${state.currentUser.role})</span>
-                    <button class="btn btn-danger" style="padding: 4px 8px; font-size: 0.8rem;" onclick="handleLogout(false)">Salir</button>
                 `;
             } else {
                 container.innerHTML = `<span>🔒 Iniciar Sesión</span>`;
@@ -1066,7 +1142,7 @@
                     <td>${o.table}</td>
                     <td style="font-size: 0.85rem; max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${itemsText}">${itemsText}</td>
                     <td>$${o.total.toFixed(2)}</td>
-                    <td><span class="badge badge-${o.status.toLowerCase()}">${o.status}</span></td>
+                    <td><span class="badge badge-${o.status.toLowerCase().replace(' ', '')}">${o.status}</span></td>
                     <td>
                         <button class="btn btn-warning" style="padding: 4px 8px; font-size: 0.75rem; width: auto; display: inline-flex;" 
                                 ${!isEditable ? 'disabled' : ''} onclick="editWaiterOrder(${o.id})">Editar</button>
@@ -1083,10 +1159,10 @@
            ========================================================================== */
         function renderKitchenOrders() {
             const board = document.getElementById('kitchen-kanban-board');
+            if(!board) return;
             board.innerHTML = '';
 
             // REGLA DE NEGOCIO: Estricto flujo FIFO (First In, First Out)
-            // Filtra pedidos en cola para cocina ("Pendiente" o "En preparación") ordenados cronológicamente (antiguos primero)
             const kitchenQueue = state.orders
                 .filter(o => o.status === 'Pendiente' || o.status === 'En preparación')
                 .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
@@ -1103,9 +1179,8 @@
                 const isNew = o.status === 'Pendiente';
 
                 const card = document.createElement('article');
-                card.className = `kitchen-card status-${o.status.toLowerCase()}`;
+                card.className = `kitchen-card status-${o.status.toLowerCase().replace(' ', '')}`;
                 
-                // Formateador de tiempo transcurrido
                 let timeStr = elapsedSeconds < 60 ? `${elapsedSeconds} seg` : `${Math.floor(elapsedSeconds / 60)} min`;
 
                 card.innerHTML = `
@@ -1114,10 +1189,10 @@
                             <span style="font-size:0.75rem; color:var(--text-muted);">Pedido</span>
                             <h3 style="margin-top:-4px;">#${o.id}</h3>
                         </div>
-                        <span class="badge badge-${o.status.toLowerCase()}">${o.status === 'Pendiente' ? 'Pendiente (FIFO)' : o.status}</span>
+                        <span class="badge badge-${o.status.toLowerCase().replace(' ', '')}">${o.status === 'Pendiente' ? 'Pendiente (FIFO)' : o.status}</span>
                     </div>
                     
-                    <div style="margin-top:10px; font-size:1.1rem; font-weight:700; color:var(--warning);">
+                    <div style="margin-top:10px; font-size:1.1rem; font-weight:700; color:var(--text-main);">
                         📍 ${o.table}
                     </div>
 
@@ -1135,7 +1210,7 @@
 
                     <div style="margin-top:15px; display:flex; gap:8px;">
                         ${isNew ? 
-                            `<button class="btn btn-primary" style="flex:1; padding:8px;" onclick="changeOrderStatus(${o.id}, 'En preparación')">👨‍🍳 Preparar</button>` :
+                            `<button class="btn btn-warning" style="flex:1; padding:8px;" onclick="changeOrderStatus(${o.id}, 'En preparación')">👨‍🍳 Preparar</button>` :
                             `<button class="btn btn-success" style="flex:1; padding:8px;" onclick="changeOrderStatus(${o.id}, 'Listo')">✅ Listo para Servir</button>`
                         }
                     </div>
@@ -1161,11 +1236,10 @@
             showToast(`Pedido #${order.id} pasó a '${newStatus}'`, "success");
 
             // SIMULACIÓN WEBSOCKETS (<2 SEGUNDOS):
-            // Si pasa a estado "Listo", notificar reactivamente al Garzón de manera inmediata
             if (newStatus === 'Listo') {
                 setTimeout(() => {
                     triggerWaiterNotification(order.id, order.table);
-                }, 800); // Demora simulada de 800 milisegundos (menor a 2s de especificación técnica)
+                }, 800); 
             }
 
             renderKitchenOrders();
@@ -1174,13 +1248,11 @@
         }
 
         function triggerWaiterNotification(orderId, table) {
-            // Emite una alerta visual interactiva visible en cualquier parte del sistema
             showToast(`📢 ¡NOTIFICACIÓN DE COCINA! El Pedido #${orderId} para la "${table}" está LISTO para ser servido.`, "success", 8000);
         }
 
-        // Refrescar el contador de tiempo de la cocina automáticamente cada 10 segundos
         setInterval(() => {
-            if (document.getElementById('view-kitchen').style.display === 'block') {
+            if (document.getElementById('view-kitchen') && document.getElementById('view-kitchen').style.display === 'block') {
                 renderKitchenOrders();
             }
         }, 10000);
@@ -1192,7 +1264,9 @@
             state.adminTab = tabName;
             const tabs = ['caja', 'menu', 'logs'];
             tabs.forEach(t => {
-                document.getElementById(`admin-${t}-sec`).style.display = (t === tabName) ? 'block' : 'none';
+                const sec = document.getElementById(`admin-${t}-sec`);
+                if(sec) sec.style.display = (t === tabName) ? 'block' : 'none';
+                
                 const btn = document.getElementById(`tab-${t}`);
                 if (btn) {
                     if (t === tabName) btn.classList.add('active');
@@ -1206,12 +1280,10 @@
 
         function renderCajaPanel() {
             const tbody = document.getElementById('admin-caja-table-body');
+            if(!tbody) return;
             tbody.innerHTML = '';
 
-            // Mostrar órdenes con estado "Listo" o "Pagado" para control de flujo de caja
             const checkoutQueue = state.orders.filter(o => o.status === 'Listo');
-            
-            // Estadísticas en tiempo real de la caja
             const pagados = state.orders.filter(o => o.status === 'Pagado');
             const totalRecaudado = pagados.reduce((acc, curr) => acc + curr.total, 0);
 
@@ -1272,7 +1344,6 @@
             document.getElementById('cierre-venta-total').innerText = `$${totalRecaudado.toFixed(2)}`;
             document.getElementById('cierre-cant-anulados').innerText = anulados.length;
 
-            // Desglose de popularidad de artículos vendidos
             const itemCounts = {};
             pagados.forEach(order => {
                 order.items.forEach(item => {
@@ -1308,7 +1379,6 @@
                     "EJECUTÓ CIERRE DE JORNADA Y REINICIO DE CAJA"
                 );
 
-                // Filtrar comandas vigentes (no terminadas) para que no se pierdan si se realiza un cierre
                 state.orders = state.orders.filter(o => o.status !== 'Pagado' && o.status !== 'Anulado');
                 saveStateToStorage();
 
@@ -1321,9 +1391,10 @@
             }
         }
 
-        /* MANTENEDOR DEL MENÚ (CAMBIOS DE PRECIO E INVENTARIO EN CALIENTE) */
+        /* MANTENEDOR DEL MENÚ */
         function renderMenuMaintainer() {
             const container = document.getElementById('admin-menu-list');
+            if(!container) return;
             container.innerHTML = '';
 
             state.menu.forEach(p => {
@@ -1403,9 +1474,8 @@
                 role,
                 action
             };
-            state.logs.unshift(logEntry); // Insertar al inicio para visualización inmediata
+            state.logs.unshift(logEntry); 
             
-            // Mantener un límite de hasta 500 logs para resiliencia de hardware de 2GB RAM
             if (state.logs.length > 500) {
                 state.logs.pop();
             }
@@ -1414,6 +1484,7 @@
 
         function renderAuditLogs() {
             const tbody = document.getElementById('audit-logs-table-body');
+            if(!tbody) return;
             tbody.innerHTML = '';
 
             if (state.logs.length === 0) {
@@ -1466,7 +1537,6 @@
            SIMULACIÓN DE PRUEBA DE CARGA (50 PEDIDOS CONCURRENTES)
            ========================================================================== */
         function loadPerformanceMocks() {
-            // Generar 50 órdenes aleatorias con estados diversos para probar robustez en hardware de bajo costo (2GB RAM)
             const mesas = ["Mesa 1", "Mesa 2", "Mesa 3", "Mesa 4", "Mesa 5", "Mesa 6", "Llevar"];
             const estados = ["Pendiente", "En preparación", "Listo"];
             const nombresComunes = ["Andrés", "Camila", "Felipe", "Marta", "Gonzalo"];
@@ -1488,7 +1558,6 @@
                     subtotal += prod.price * qty;
                 }
 
-                // Distribución temporal simulada para cascada FIFO en cocina (hasta 2 horas atrás)
                 const mockTime = new Date(Date.now() - Math.floor(Math.random() * 7200000)).toISOString();
 
                 state.orders.push({
@@ -1512,7 +1581,6 @@
 
             showToast("🚀 Éxito: 50 Pedidos concurrentes inyectados en la memoria del navegador.", "success");
             
-            // Re-renderizar todo
             renderWaiterOrders();
             renderKitchenOrders();
             renderCajaPanel();
