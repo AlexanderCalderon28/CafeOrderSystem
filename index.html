@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CafeOrder System - Prototipo de Alta Fidelidad</title>
+    <title>CafeOrder System - Prototipo Final Único</title>
     <style>
-        /* Paleta de Colores Corporativa y Tipografía */
+        /* Paleta de Colores Corporativa (Verde, Café y Blanco) de Alta Fidelidad */
         :root {
             --bg-main: #FCF9F6;
             --sidebar-bg: #2B1A11;
@@ -16,7 +16,7 @@
             --card-bg: #FFFFFF;
             --border-color: #E6E1DA;
             
-            /* Estados Kanban */
+            /* Columnas Kanban */
             --col-new-bg: #E4F0F6;
             --col-new-text: #2A5B7A;
             --col-prep-bg: #FDF3E7;
@@ -47,7 +47,7 @@
             overflow: hidden;
         }
 
-        /* --- VISTA DE LOGIN --- */
+        /* --- CONTROLADOR DE VISTA DE LOGIN --- */
         #login-view {
             display: flex;
             align-items: center;
@@ -156,14 +156,14 @@
             display: none;
         }
 
-        /* --- CONTENEDOR PRINCIPAL SPA --- */
+        /* --- ARQUITECTURA DISTRIBUIDA DE LA APP --- */
         #app-layout {
-            display: none; /* Se activa tras login */
+            display: none;
             height: 100vh;
             grid-template-columns: 260px 1fr;
         }
 
-        /* --- SIDEBAR IZQUIERDO --- */
+        /* --- SIDEBAR IZQUIERDO CORPORATIVO --- */
         aside {
             background-color: var(--sidebar-bg);
             display: flex;
@@ -243,7 +243,7 @@
             text-align: center;
         }
 
-        /* --- CONTENEDOR DE CONTENIDO DERECHO --- */
+        /* --- PANEL DE CONTENIDO GENERAL --- */
         main {
             display: flex;
             flex-direction: column;
@@ -251,7 +251,6 @@
             overflow: hidden;
         }
 
-        /* Top Header Navbar */
         header {
             height: 60px;
             background-color: #FFFFFF;
@@ -284,7 +283,6 @@
             align-items: center;
         }
 
-        /* Contenedor de Vistas Dinámicas */
         .view-content {
             flex-grow: 1;
             padding: 24px 32px;
@@ -293,7 +291,7 @@
         }
 
         .view-section {
-            display: none; /* Controlado por JS */
+            display: none;
             height: 100%;
         }
 
@@ -301,7 +299,7 @@
             display: block;
         }
 
-        /* --- KITCHEN VIEW (KANBAN BOARD) --- */
+        /* --- VISTA DE COCINA KANBAN --- */
         .kanban-board {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -348,7 +346,6 @@
             padding-right: 4px;
         }
 
-        /* Tarjetas de Pedidos */
         .order-card {
             background-color: var(--card-bg);
             border: 1px solid var(--border-color);
@@ -413,7 +410,6 @@
             gap: 8px;
         }
 
-        /* Checkboxes interactivos de preparación */
         .card-items-list input[type="checkbox"] {
             width: 16px;
             height: 16px;
@@ -444,10 +440,6 @@
             color: var(--sidebar-text-active);
         }
 
-        .card-action-btn:hover {
-            opacity: 0.9;
-        }
-
         .status-badge-text {
             font-size: 14px;
             font-style: italic;
@@ -455,7 +447,7 @@
             margin-bottom: 16px;
         }
 
-        /* --- ADMIN DASHBOARD VIEW --- */
+        /* --- DASHBOARD DE ADMINISTRACIÓN --- */
         .placeholder-container {
             display: flex;
             align-items: center;
@@ -468,7 +460,7 @@
             background: #FFFFFF;
         }
 
-        /* --- CASHIER PAYMENTS VIEW --- */
+        /* --- PAGOS DE CAJA --- */
         .cashier-layout {
             display: grid;
             grid-template-columns: 400px 1fr;
@@ -477,7 +469,6 @@
         }
 
         .cashier-pane {
-            background-color: transparent;
             display: flex;
             flex-direction: column;
             height: 100%;
@@ -573,7 +564,6 @@
             color: var(--text-dark);
         }
 
-        /* Detalle de Pago Derecho */
         .payment-empty-state {
             display: flex;
             flex-direction: column;
@@ -615,7 +605,6 @@
             margin-top: 16px;
         }
 
-        /* Barra de Resumen de Caja Inferior */
         .cashier-footer-bar {
             margin-top: 24px;
             background-color: #E6E1DA;
@@ -660,7 +649,7 @@
             gap: 8px;
         }
 
-        /* --- MODAL CIERRE DE CAJA --- */
+        /* --- MODAL DE CIERRE DE CAJA --- */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -709,555 +698,10 @@
 </head>
 <body>
 
-    <!-- ================= VISTA DE LOGIN ================= -->
     <section id="login-view">
         <div class="login-card">
             <div class="login-logo">
                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#2B1A11" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M17 8h1a4 4 0 1 1 0 8h-1"></path>
                     <path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"></path>
-                    <line x1="6" y1="2" x2="6" y2="4"></line>
-                    <line x1="10" y1="2" x2="10" y2="4"></line>
-                    <line x1="14" y1="2" x2="14" y2="4"></line>
-                </svg>
-            </div>
-            <h1>CafeOrder</h1>
-            <p class="subtitle">System Access</p>
-            
-            <div class="login-error-msg" id="login-error">Datos incorrectos, intente nuevamente</div>
-
-            <div class="form-group">
-                <label>Email</label>
-                <input type="text" id="login-email" value="admin@cafe.cl">
-            </div>
-            <div class="form-group">
-                <label>Password</label>
-                <input type="password" id="login-password" value="admin123">
-            </div>
-            
-            <button class="btn-login" onclick="handleLogin()">Login</button>
-
-            <div class="login-helper">
-                <strong>Credenciales de Demostración:</strong><br>
-                Admin: admin@cafe.cl / admin123<br>
-                Barista: cocina@cafe.cl / cocina123
-            </div>
-        </div>
-    </section>
-
-    <!-- ================= ARQUITECTURA PRINCIPAL SPA ================= -->
-    <div id="app-layout">
-        
-        <!-- SIDEBAR NAV IZQUIERDO -->
-        <aside>
-            <div>
-                <div class="brand-section">
-                    <div class="brand-title">CafeOrder<br>System</div>
-                    <div class="brand-status">System Online</div>
-                </div>
-
-                <ul class="nav-menu">
-                    <li class="nav-item active" id="nav-kitchen" onclick="switchView('kitchen')">
-                        <svg width="18" height="18" viewBox="0 0 24 24"><path d="M8.1 21.8c-1.2 0-2.3-.5-3.1-1.3-.9-.9-1.3-2-1.3-3.2 0-2.2 1.6-4.1 3.8-4.4V3.5c0-.8.7-1.5 1.5-1.5s1.5.7 1.5 1.5v9.4c2.2.3 3.8 2.2 3.8 4.4 0 1.2-.5 2.3-1.3 3.2-.8.8-1.9 1.3-3.1 1.3zm.4-6.3h-.8c-1.1 0-2 .9-2 2s.9 2 2 2h.8c1.1 0 2-.9 2-2s-.9-2-2-2zM17.5 22c-.8 0-1.5-.7-1.5-1.5V3.5c0-.8.7-1.5 1.5-1.5s1.5.7 1.5 1.5v17c0 .8-.7 1.5-1.5 1.5z"/></svg>
-                        Kitchen View
-                    </li>
-                    <li class="nav-item" id="nav-admin" onclick="switchView('admin')">
-                        <svg width="18" height="18" viewBox="0 0 24 24"><path d="M4 11h6a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1zm10 0h6a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1h6a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1zM4 21h6a1 1 0 0 0 1-1v-6a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1zm10 0h6a1 1 0 0 0 1-1v-6a1 1 0 0 0-1-1h-6a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1z"/></svg>
-                        Admin Dashboard
-                    </li>
-                    <li class="nav-item" id="nav-cashier" onclick="switchView('cashier')">
-                        <svg width="18" height="18" viewBox="0 0 24 24"><path d="M21 7H3a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h18a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2zm-1 12H4v-2h16v2zm0-4H4V11h16v4zm1-10H3V3h18v2z"/></svg>
-                        Cashier Payments
-                    </li>
-                </ul>
-            </div>
-
-            <div class="sidebar-footer">
-                <div class="nav-item" style="margin-bottom:4px; opacity:0.7; cursor:default;">
-                    <svg width="16" height="16" viewBox="0 0 24 24"><path d="M19.4 13c0-.3.1-.6.1-.9s0-.6-.1-.9l2.1-1.7c.2-.2.2-.4.1-.6l-2-3.5c-.1-.2-.4-.3-.6-.2l-2.5 1c-.5-.4-1.1-.7-1.8-.9l-.4-2.6c0-.2-.2-.4-.4-.4h-4c-.2 0-.4.2-.4.4l-.4 2.6c-.7.2-1.3.5-1.8.9l-2.5-1c-.2-.1-.5 0-.6.2l-2 3.5c-.1.2-.1.4.1.6l2.1 1.7c0 .3-.1.6-.1.9s0 .6.1.9l-2.1 1.7c-.2.2-.2.4-.1.6l2 3.5c.1.2.4.3.6.2l2.5-1c.5.4 1.1.7 1.8.9l.4 2.6c0 .2.2.4.4.4h4c.2 0 .4-.2.4-.4l.4-2.6c.7-.2 1.3-.5 1.8-.9l2.5 1c.2.1.5 0 .6-.2l2-3.5c.1-.2.1-.4-.1-.6l-2.1-1.7zm-7.4 2.5c-1.9 0-3.5-1.6-3.5-3.5s1.6-3.5 3.5-3.5 3.5 1.6 3.5 3.5-1.6 3.5-3.5 3.5z"/></svg>
-                    Settings
-                </div>
-                <div class="nav-item" style="margin-bottom:0; opacity:0.7; cursor:default;">
-                    <svg width="16" height="16" viewBox="0 0 24 24"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm1 16h-2v-2h2v2zm1.1-6.4c-.4.4-.7.8-.8 1.4h-1.7c0-1 .4-1.8 1-2.4l1.1-1.1c.3-.3.5-.7.5-1.1 0-.8-.7-1.5-1.5-1.5s-1.5.7-1.5 1.5H7.5C7.5 6.5 9.5 4.5 12 4.5s4.5 2 4.5 4.5c0 1-.4 1.8-1.4 2.6z"/></svg>
-                    Support
-                </div>
-                <button class="btn-close-shift" onclick="logout()">Close Shift</button>
-            </div>
-        </aside>
-
-        <!-- AREA DE CONTENIDO PRINCIPAL -->
-        <main>
-            <!-- TOP NAVBAR PERMANENTE -->
-            <header>
-                <div class="top-status">System Online</div>
-                <div class="top-user-role" id="top-role-display">Admin</div>
-                <button class="icon-btn">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-                </button>
-                <button class="icon-btn">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                </button>
-            </header>
-
-            <!-- VISTAS DINÁMICAS (SPA) -->
-            <div class="view-content">
-                
-                <!-- 1. KITCHEN KANBAN VIEW -->
-                <div id="view-kitchen" class="view-section active">
-                    <div class="kanban-board">
-                        
-                        <!-- NUEVOS PEDIDOS -->
-                        <div class="kanban-column">
-                            <div class="column-header new">
-                                <span>Nuevos Pedidos</span>
-                                <span class="column-count" id="count-new">0</span>
-                            </div>
-                            <div class="column-cards-container" id="col-new-cards">
-                                <!-- Render dinámico -->
-                            </div>
-                        </div>
-
-                        <!-- EN PREPARACION -->
-                        <div class="kanban-column">
-                            <div class="column-header prep">
-                                <span>En Preparación</span>
-                                <span class="column-count" id="count-prep">0</span>
-                            </div>
-                            <div class="column-cards-container" id="col-prep-cards">
-                                <!-- Render dinámico -->
-                            </div>
-                        </div>
-
-                        <!-- LISTOS -->
-                        <div class="kanban-column">
-                            <div class="column-header ready">
-                                <span>Listos</span>
-                                <span class="column-count" id="count-ready">0</span>
-                            </div>
-                            <div class="column-cards-container" id="col-ready-cards">
-                                <!-- Render dinámico -->
-                            </div>
-                        </div>
-
-                    </div>
-                </div>
-
-                <!-- 2. ADMIN DASHBOARD VIEW -->
-                <div id="view-admin" class="view-section">
-                    <div class="placeholder-container">
-                        Admin Dashboard (Placeholder)
-                    </div>
-                </div>
-
-                <!-- 3. CASHIER PAYMENTS VIEW -->
-                <div id="view-cashier" class="view-section">
-                    <div class="cashier-layout">
-                        
-                        <!-- Lista de cuentas por pagar -->
-                        <div class="cashier-pane">
-                            <div class="cashier-pane-white">
-                                <h3 class="pane-title">Unpaid Orders</h3>
-                                <div class="search-box-container">
-                                    <svg class="search-icon-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                                    <input type="text" placeholder="Search Table or ID...">
-                                </div>
-                                <div class="unpaid-list" id="cashier-unpaid-container">
-                                    <!-- Render dinámico -->
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Panel de procesamiento de pago -->
-                        <div class="cashier-pane">
-                            <div class="cashier-pane-white" id="payment-process-pane">
-                                <div class="payment-empty-state">
-                                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-                                    <p>Select an order to process payment</p>
-                                </div>
-                            </div>
-                        </div>
-
-                    </div>
-
-                    <!-- Barra global inferior de acumulación -->
-                    <div class="cashier-footer-bar">
-                        <div>
-                            <div class="footer-accumulated-label">Total Acumulado de la Jornada</div>
-                            <div class="footer-accumulated-value" id="box-total">$0.00 <span id="box-transactions">(0 transacciones)</span></div>
-                        </div>
-                        <button class="btn-cierre-caja" onclick="openCierreModal()">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><line x1="6" y1="8" x2="18" y2="8"/><line x1="6" y1="12" x2="18" y2="12"/><line x1="6" y1="16" x2="18" y2="16"/></svg>
-                            Cierre de Caja
-                        </button>
-                    </div>
-                </div>
-
-            </div>
-        </main>
-    </div>
-
-    <!-- ================= MODALES DEL SISTEMA ================= -->
-    <div class="modal-overlay" id="cierre-modal">
-        <div class="modal-card">
-            <h2>Resumen Operativo de Cierre</h2>
-            <div id="cierre-modal-body" style="font-size: 15px; line-height: 1.6; color: #4A3E36;">
-                <!-- Cargado por JS -->
-            </div>
-            <div class="modal-actions">
-                <button class="modal-btn secondary" onclick="closeCierreModal()">Volver</button>
-                <button class="modal-btn primary" onclick="executeCierreCompleto()">Confirmar Cierre</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- ================= CONTROLADORES DE LOGICA (JAVASCRIPT) ================= -->
-    <script>
-        // Datos Iniciales Estables de Semilla (Basados exactamente en capturas de pantalla)
-        const initialOrders = [
-            {
-                id: 42,
-                table: "Table 04",
-                type: "Salón",
-                time: "02:32",
-                priority: false,
-                items: [
-                    { name: "2x Cappuccino Grande (Leche Avena)", done: false },
-                    { name: "1x Croissant Almendras", done: false },
-                    { name: "1x Espresso Doble", done: false }
-                ],
-                status: "nuevo",
-                price: 13.50
-            },
-            {
-                id: 38,
-                table: "Takeaway",
-                type: "Para Llevar",
-                time: "13:02",
-                priority: true, // Alerta visual roja
-                items: [
-                    { name: "4x Flat White", done: false },
-                    { name: "2x Tostada Aguacate", done: false }
-                ],
-                status: "nuevo",
-                price: 18.00
-            },
-            {
-                id: 39,
-                table: "Table 12",
-                type: "Salón",
-                time: "05:37",
-                priority: false,
-                items: [
-                    { name: "1x Latte Vainilla", done: true },
-                    { name: "1x Sandwich Pavo", done: false }
-                ],
-                status: "preparacion",
-                price: 9.25
-            },
-            {
-                id: 37,
-                table: "Table 02",
-                type: "Salón",
-                time: "08:58",
-                priority: false,
-                items: [
-                    { name: "2x Americano Frio", done: true }
-                ],
-                status: "listo",
-                price: 6.00
-            }
-        ];
-
-        let orders = [];
-        let totalSales = 0;
-        let transactionsCount = 0;
-        let selectedOrderForPayment = null;
-
-        // Inicialización y Carga Resiliente desde localStorage
-        window.addEventListener('DOMContentLoaded', () => {
-            if (!localStorage.getItem('cafe_orders')) {
-                localStorage.setItem('cafe_orders', JSON.stringify(initialOrders));
-                localStorage.setItem('cafe_total_sales', '0');
-                localStorage.setItem('cafe_transactions', '0');
-            }
-            loadState();
-            renderAll();
-        });
-
-        function loadState() {
-            orders = JSON.parse(localStorage.getItem('cafe_orders'));
-            totalSales = parseFloat(localStorage.getItem('cafe_total_sales')) || 0;
-            transactionsCount = parseInt(localStorage.getItem('cafe_transactions')) || 0;
-        }
-
-        function saveState() {
-            localStorage.setItem('cafe_orders', JSON.stringify(orders));
-            localStorage.setItem('cafe_total_sales', totalSales.toFixed(2));
-            localStorage.setItem('cafe_transactions', transactionsCount.toString());
-        }
-
-        // Sistema Autenticación SPA
-        function handleLogin() {
-            const email = document.getElementById('login-email').value;
-            const pass = document.getElementById('login-password').value;
-            const errorMsg = document.getElementById('login-error');
-
-            if (email === 'admin@cafe.cl' && pass === 'admin123') {
-                document.getElementById('top-role-display').innerText = 'Admin';
-                successLogin();
-            } else if (email === 'cocina@cafe.cl' && pass === 'cocina123') {
-                document.getElementById('top-role-display').innerText = 'Barista';
-                successLogin();
-                switchView('kitchen');
-            } else {
-                errorMsg.style.display = 'block';
-            }
-        }
-
-        function successLogin() {
-            document.getElementById('login-view').style.display = 'none';
-            document.getElementById('app-layout').style.display = 'grid';
-        }
-
-        function logout() {
-            document.getElementById('app-layout').style.display = 'none';
-            document.getElementById('login-view').style.display = 'flex';
-            document.getElementById('login-error').style.display = 'none';
-        }
-
-        // Navegación de Vistas SPA
-        function switchView(viewName) {
-            document.querySelectorAll('.view-section').forEach(view => view.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-
-            document.getElementById(`view-${viewName}`).classList.add('active');
-            document.getElementById(`nav-${viewName}`).classList.add('active');
-            
-            renderAll();
-        }
-
-        // Motores de Render Dinámico (Basados en Interfaces de Stitch)
-        function renderAll() {
-            renderKitchen();
-            renderCashier();
-        }
-
-        function renderKitchen() {
-            const colNew = document.getElementById('col-new-cards');
-            const colPrep = document.getElementById('col-prep-cards');
-            const colReady = document.getElementById('col-ready-cards');
-
-            colNew.innerHTML = '';
-            colPrep.innerHTML = '';
-            colReady.innerHTML = '';
-
-            let countNew = 0, countPrep = 0, countReady = 0;
-
-            orders.forEach(order => {
-                if (order.status === 'nuevo') {
-                    countNew++;
-                    const card = document.createElement('div');
-                    card.className = `order-card ${order.priority ? 'alert-priority' : ''}`;
-                    card.innerHTML = `
-                        <div class="card-meta">
-                            <span class="card-id">#${order.id}</span>
-                            <span class="card-timer">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                                ${order.time}
-                            </span>
-                        </div>
-                        <div class="card-table">${order.table}</div>
-                        <ul class="card-items-list">
-                            ${order.items.map(item => `<li>• ${item.name}</li>`).join('')}
-                        </ul>
-                        <button class="card-action-btn" onclick="moveOrder(${order.id}, 'preparacion')">Comenzar</button>
-                    `;
-                    colNew.appendChild(card);
-                } 
-                else if (order.status === 'preparacion') {
-                    countPrep++;
-                    const card = document.createElement('div');
-                    card.className = 'order-card';
-                    card.innerHTML = `
-                        <div class="card-meta">
-                            <span class="card-id">#${order.id}</span>
-                            <span class="card-timer">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                                ${order.time}
-                            </span>
-                        </div>
-                        <div class="card-table">${order.table}</div>
-                        <ul class="card-items-list">
-                            ${order.items.map((item, idx) => `
-                                <li class="${item.done ? 'checked-item' : ''}">
-                                    <input type="checkbox" ${item.done ? 'checked' : ''} onchange="toggleItemDone(${order.id}, ${idx})">
-                                    ${item.name}
-                                </li>
-                            `).join('')}
-                        </ul>
-                        <button class="card-action-btn" onclick="moveOrder(${order.id}, 'listo')">Finalizar</button>
-                    `;
-                    colPrep.appendChild(card);
-                } 
-                else if (order.status === 'listo') {
-                    countReady++;
-                    const card = document.createElement('div');
-                    card.className = 'order-card';
-                    card.innerHTML = `
-                        <div class="card-meta">
-                            <span class="card-id">#${order.id}</span>
-                            <span class="card-timer">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-                                ${order.time}
-                            </span>
-                        </div>
-                        <div class="card-table">${order.table}</div>
-                        <div class="status-badge-text">Listo para entregar/pagar</div>
-                        <button class="card-action-btn secondary" onclick="moveOrder(${order.id}, 'unpaid')">Enviar a Caja</button>
-                    `;
-                    colReady.appendChild(card);
-                }
-            });
-
-            document.getElementById('count-new').innerText = countNew;
-            document.getElementById('count-prep').innerText = countPrep;
-            document.getElementById('count-ready').innerText = countReady;
-        }
-
-        function renderCashier() {
-            const container = document.getElementById('cashier-unpaid-container');
-            container.innerHTML = '';
-
-            const unpaidOrders = orders.filter(o => o.status === 'unpaid');
-
-            unpaidOrders.forEach(order => {
-                const itemSummary = order.items.map(i => i.name.split('x ')[1] || i.name).join(', ');
-                const card = document.createElement('div');
-                card.className = `unpaid-card ${selectedOrderForPayment && selectedOrderForPayment.id === order.id ? 'selected' : ''}`;
-                card.onclick = () => selectOrderForPayment(order);
-                card.innerHTML = `
-                    <div>
-                        <span class="unpaid-card-tag">${order.table}</span><span class="unpaid-card-id">#ORD-${order.id}</span>
-                        <div class="unpaid-card-items">${itemSummary.length > 35 ? itemSummary.substring(0, 35) + '...' : itemSummary}</div>
-                    </div>
-                    <div class="unpaid-card-price">$${order.price.toFixed(2)}</div>
-                `;
-                container.appendChild(card);
-            });
-
-            // Actualizar Totales de Barra Inferior
-            document.getElementById('box-total').innerHTML = `$${totalSales.toFixed(2)} <span id="box-transactions">(${transactionsCount} transacciones)</span>`;
-            
-            renderPaymentDetailPane();
-        }
-
-        function renderPaymentDetailPane() {
-            const pane = document.getElementById('payment-process-pane');
-            if (!selectedOrderForPayment || selectedOrderForPayment.status !== 'unpaid') {
-                pane.innerHTML = `
-                    <div class="payment-empty-state">
-                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-                        <p>Select an order to process payment</p>
-                    </div>
-                `;
-                return;
-            }
-
-            pane.innerHTML = `
-                <div class="payment-details-container">
-                    <div>
-                        <h3 class="pane-title" style="margin-bottom:4px;">Procesar Pago #ORD-${selectedOrderForPayment.id}</h3>
-                        <p style="font-size:13px; color:#7A6E67; margin-bottom:24px;">Ubicación: ${selectedOrderForPayment.table}</p>
-                        
-                        <div class="bill-header">
-                            <span style="font-size:12px; font-weight:700; color:#554A42; text-transform:uppercase;">Detalle de Consumo</span>
-                        </div>
-                        
-                        ${selectedOrderForPayment.items.map(item => `
-                            <div class="bill-row">
-                                <span>${item.name}</span>
-                                <span>--</span>
-                            </div>
-                        `).join('')}
-                        
-                        <div class="bill-total-row">
-                            <span>Total a Pagar</span>
-                            <span>$${selectedOrderForPayment.price.toFixed(2)}</span>
-                        </div>
-                    </div>
-                    
-                    <button class="btn-login" style="margin-top:24px; background-color:var(--sidebar-bg);" onclick="processPayment(${selectedOrderForPayment.id})">
-                        Registrar Pago Exitoso
-                    </button>
-                </div>
-            `;
-        }
-
-        // Lógica de Movimiento Transaccional de Estados
-        function moveOrder(id, nextStatus) {
-            const order = orders.find(o => o.id === id);
-            if (order) {
-                order.status = nextStatus;
-                saveState();
-                renderAll();
-            }
-        }
-
-        function toggleItemDone(orderId, itemIdx) {
-            const order = orders.find(o => o.id === orderId);
-            if (order && order.items[itemIdx]) {
-                order.items[itemIdx].done = !order.items[itemIdx].done;
-                saveState();
-                renderKitchen();
-            }
-        }
-
-        function selectOrderForPayment(order) {
-            selectedOrderForPayment = order;
-            renderCashier();
-        }
-
-        function processPayment(id) {
-            const order = orders.find(o => o.id === id);
-            if (order) {
-                order.status = 'pagado';
-                totalSales += order.price;
-                transactionsCount++;
-                selectedOrderForPayment = null;
-                saveState();
-                renderAll();
-            }
-        }
-
-        // Lógica de Modales Operativos
-        function openCierreModal() {
-            const modal = document.getElementById('cierre-modal');
-            const body = document.getElementById('cierre-modal-body');
-            
-            body.innerHTML = `
-                <div style="background:#FAF6F2; padding:16px; border-radius:6px; margin-bottom:16px; border:1px solid var(--border-color)">
-                    <strong>Ventas Totales:</strong> $${totalSales.toFixed(2)}<br>
-                    <strong>Transacciones Realizadas:</strong> ${transactionsCount}<br>
-                    <strong>Órdenes en Cola Pendiente:</strong> ${orders.filter(o => o.status !== 'pagado').length}
-                </div>
-                <p>Al confirmar el cierre de caja, se consolidará el balance financiero de la jornada operativa actual y se archivará el historial transaccional en el log local.</p>
-            `;
-            modal.style.display = 'flex';
-        }
-
-        function closeCierreModal() {
-            document.getElementById('cierre-modal').style.display = 'none';
-        }
-
-        function executeCierreCompleto() {
-            totalSales = 0;
-            transactionsCount = 0;
-            orders = orders.filter(o => o.status !== 'pagado'); // Limpieza preventiva de pagados
-            saveState();
-            closeCierreModal();
-            renderAll();
-            alert('Cierre de caja ejecutado con éxito. Balance reiniciado para el siguiente turno.');
-        }
-    </script>
-</body>
-</html>
+                    <line x1="6" y1
