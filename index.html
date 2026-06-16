@@ -116,7 +116,7 @@
            VISTA 1: INICIO DE SESIÓN
            ========================================================================== */
         #view-login {
-            display: flex !important;
+            display: flex;
             min-height: 100vh;
             align-items: center;
             justify-content: center;
@@ -681,7 +681,6 @@
             inactivityInterval = setInterval(() => {
                 if (state.currentUser) {
                     secondsLeft--;
-                    // El contador sigue funcionando, pero la barra visual se eliminó a petición.
                     if (secondsLeft <= 0) {
                         handleLogout(true);
                     }
@@ -719,6 +718,7 @@
             } else {
                 appLayout.style.display = 'block';
                 mainHeader.style.display = 'block'; 
+                window.scrollTo({ top: 0, behavior: 'instant' }); // Oculta el login al instante y te sube
             }
 
             renderWaiterMenu();
